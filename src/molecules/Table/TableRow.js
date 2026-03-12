@@ -44,6 +44,7 @@ import { calculateItem } from "../../lib/main.actions";import './Table.css'
         <td><NumberBox name="rumbo" label="Rumbo" placeholder="Rumbo al objetivo" value={item.rumbo} onChange={setRumbo} /></td>
         <td>{item.resultado.toFixed(2)}</td>
         <td>{item.azimuth.toFixed(2)}</td>
+        <td>{item.tiempo.toFixed(2)}s</td>
       </tr>   
     );
 }

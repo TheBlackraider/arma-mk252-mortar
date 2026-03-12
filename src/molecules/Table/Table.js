@@ -17,12 +17,13 @@ const Table = ({ dispatcher, state }) => {
           <th>Rumbo</th>
           <th>Elevacion</th>
           <th>Azimuth</th>
+          <th>Tiempo (s)</th>
           
         </tr>
       </thead>
       <tbody>
         {state.misiones.map((item) => (
-          <TableRow item={item} dispatcher={dispatcher} />
+          <TableRow key={item.key} item={item} dispatcher={dispatcher} />
         ))}
       </tbody>
       </table>

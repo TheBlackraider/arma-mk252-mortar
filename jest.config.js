@@ -1,12 +1,10 @@
 // jest.config.js
 module.exports = {
+  testEnvironment: "jsdom",
+  transform: { "^.+\\.[t|j]sx?$": "babel-jest" },
   moduleNameMapper: {
-    "^./mision.entity$": "<rootDir>/src/data/mision.entity.js"
+    "\\.(css|less|scss)$": "<rootDir>/__mocks__/styleMock.js"
   },
-  transform: {
-    "^.+\\.[t|j]sx?$": "babel-jest"
-  },
-  testEnvironment: "node",
   moduleFileExtensions: ["js", "jsx", "json", "node"],
   roots: ["<rootDir>/src"],
   testMatch: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"]
