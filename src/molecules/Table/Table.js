@@ -17,6 +17,7 @@ const Table = ({ dispatcher, state }) => {
           <th>Rumbo</th>
           <th>Elevacion</th>
           <th>Azimuth</th>
+          <th>Tiempo (s)</th>
           
         </tr>
       </thead>
