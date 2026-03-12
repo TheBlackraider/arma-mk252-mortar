@@ -25,6 +25,7 @@ const InputForm = () => {
 
   const [resultado, setResultado] = useState(0);
   const [azimuth, setAzimuth] = useState(0);
+  const [tiempo, setTiempo] = useState(0);
 
   const optionsMunicion = ["Ch0", "Ch1", "Ch2"];
 
@@ -39,9 +40,10 @@ const InputForm = () => {
   }
 
   useEffect(() => {
-    setResultado(state.resultado);
+    setResultado(state.resultadoActual);
     setAzimuth(state.azimuthActual);
-  }, [state.resultado, state.azimuthActual]);
+    setTiempo(state.tiempoActual);
+  }, [state.resultadoActual, state.azimuthActual, state.tiempoActual]);
 
     return (
       <>

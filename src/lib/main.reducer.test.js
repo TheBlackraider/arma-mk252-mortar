@@ -137,6 +137,19 @@ describe('mainReducer', () => {
     expect(result.misiones[0].azimuth).toBe(17.777778);
     expect(result.misiones[0].key).toBe(1);
   });
+
+  test('should initialize tiempoActual to 0', () => {
+    expect(initialState.tiempoActual).toBe(0);
+  });
+
+  test('should set tiempoActual after CALCULATE_ITEM with ch0 at 300m', () => {
+    const action = {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+    };
+    const result = mainReducer(initialState, action);
+    expect(result.tiempoActual).toBe(1.5);
+  });
 });
 
 describe('getOptimalCharge', () => {

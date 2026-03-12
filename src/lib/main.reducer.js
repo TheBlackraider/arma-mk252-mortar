@@ -31,6 +31,7 @@ export const initialState = {
     alturaPropiaActual: 0,
     resultadoActual: 0,
     azimuthActual: 0,
+    tiempoActual: 0,
 };
 
 export const getChargeForDistance = (distance) => {
@@ -97,6 +98,7 @@ export const mainReducer = (state = initialState, action) => {
               ...state,
               resultadoActual: result.resultado,
               azimuthActual: result.azimuth,
+              tiempoActual: result.tiempo,
               misiones: [...state.misiones, result],
               index: state.index + 1,
           };
