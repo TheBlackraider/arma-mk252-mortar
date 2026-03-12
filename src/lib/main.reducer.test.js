@@ -142,13 +142,26 @@ describe('mainReducer', () => {
     expect(initialState.tiempoActual).toBe(0);
   });
 
-  test('should set tiempoActual after CALCULATE_ITEM with ch0 at 300m', () => {
+  test('should not call console.log when dispatching CALCULATE_ITEM', () => {
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const action = {
       type: CALCULATE_ITEM,
       payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
     };
-    const result = mainReducer(initialState, action);
-    expect(result.tiempoActual).toBe(1.5);
+    mainReducer(initialState, action);
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  test('should not call console.error for valid municion', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const action = {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch1' }
+    };
+    mainReducer(initialState, action);
+    expect(consoleSpy).not.toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });
 

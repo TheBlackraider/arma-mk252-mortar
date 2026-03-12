@@ -22,7 +22,7 @@ const Table = ({ dispatcher, state }) => {
       </thead>
       <tbody>
         {state.misiones.map((item) => (
-          <TableRow item={item} dispatcher={dispatcher} />
+          <TableRow key={item.key} item={item} dispatcher={dispatcher} />
         ))}
       </tbody>
       </table>

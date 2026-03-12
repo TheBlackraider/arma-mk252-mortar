@@ -68,7 +68,6 @@ export const mainReducer = (state = initialState, action) => {
             return { ...state };
 
         case CALCULATE_ITEM: {
-          console.log("CALCULATE_ITEM action received:", action.payload);
           const municionTypes = ["ch0", "ch1", "ch2"];
           const chargeTables = [Charge0, Charge1, Charge2];
           
@@ -76,16 +75,12 @@ export const mainReducer = (state = initialState, action) => {
           item.key = state.index;
           item.azimuth = item.rumbo * AZIMUTH_MULTIPLIER;
       
-          // Get the charge index based on selected munition type
           const selectedChargeIndex = municionTypes.indexOf(item.municion);
           
           if (selectedChargeIndex === -1) {
-              // Handle invalid munition type
-              console.error("Invalid munition type selected:", item.municion);
               return state;
           }
       
-          // Calculate result only for the selected charge
           const result = calculateMission(
               item, 
               selectedChargeIndex, 
@@ -93,7 +88,6 @@ export const mainReducer = (state = initialState, action) => {
               municionTypes
           );
       
-          console.log("Calculated result:", result);
           return {
               ...state,
               resultadoActual: result.resultado,
