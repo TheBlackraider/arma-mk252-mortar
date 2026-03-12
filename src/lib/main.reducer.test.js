@@ -388,6 +388,16 @@ describe('mainReducer', () => {
     const result = mainReducer(initialState, action);
     expect(result.resultadosActuales.ch0.recomendada).toBe(true);
   });
+
+  test('does not modify state when municion is not a valid charge (line 150 branch)', () => {
+    // distancia and rumbo are valid, but municion is not ch0/ch1/ch2
+    // => selectedChargeIndex === -1 => returns state unchanged
+    const action = {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch99' }
+    };
+    expect(mainReducer(initialState, action)).toEqual(initialState);
+  });
 });
 
 describe('getOptimalCharge — ELIMINADA', () => {

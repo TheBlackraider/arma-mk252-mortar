@@ -107,26 +107,28 @@ export const getRecommendedCharge = (distance, chargeTables) => {
     return bestCharge;
 };
 
+const buildChargeResult = (item, chargeIndex, chargeName, recommended) => {
+    const chargeNames = ['ch0', 'ch1', 'ch2'];
+    const chargeTables = [Charge0, Charge1, Charge2];
+    const { min, max } = CHARGE_RANGES[chargeIndex];
+    const mission = calculateMission(item, chargeIndex, chargeTables[chargeIndex], chargeNames);
+    return {
+        elevacion:      mission.resultado,
+        azimuth:        mission.azimuth,
+        tiempo:         mission.tiempo,
+        recomendada:    chargeName === recommended,
+        fuera_de_rango: item.distancia < min || item.distancia > max,
+    };
+};
+
 export const calculateAllCharges = (item) => {
     const chargeNames = ['ch0', 'ch1', 'ch2'];
     const chargeTables = [Charge0, Charge1, Charge2];
-
     const recommended = getRecommendedCharge(item.distancia, chargeTables);
     const results = {};
-
     chargeNames.forEach((name, i) => {
-        const { min, max } = CHARGE_RANGES[i];
-        const fueraDeRango = item.distancia < min || item.distancia > max;
-        const mission = calculateMission(item, i, chargeTables[i], chargeNames);
-        results[name] = {
-            elevacion:      mission.resultado,
-            azimuth:        mission.azimuth,
-            tiempo:         mission.tiempo,
-            recomendada:    name === recommended,
-            fuera_de_rango: fueraDeRango,
-        };
+        results[name] = buildChargeResult(item, i, name, recommended);
     });
-
     return results;
 };
 
