@@ -145,7 +145,7 @@ La calculadora de mortero MK252 para ARMA 3 es una aplicación React 18 con arqu
 - **CA-01:** `npm test` ejecuta los tests sin error (jest instalado localmente, sin npx)
 - **CA-02:** Los tests pasan con jest@29 y `@babel/preset-react` configurado
 - **CA-03:** `tiempo` en el resultado de `calculateMission` es igual a `base.timeOfFlight`, no a `timeOfFlightPer100m × (distancia/100)`
-- **CA-04:** Para Charge0 a 300m: `tiempo === 1.5` (valor de la tabla)
+- **CA-04:** Para Charge0 a 300m: `tiempo === 13.5` (valor real de la tabla balística verificado contra imagen original)
 - **CA-05:** `useEffect` en `InputForm.js` lee `state.resultadoActual` (no `state.resultado`)
 - **CA-06:** El resultado de elevación es visible en pantalla tras calcular
 - **CA-07:** Los resultados de UI tienen etiquetas: "Elevación (mils):", "Azimuth (mils):", "Tiempo de vuelo (s):"
@@ -154,7 +154,7 @@ La calculadora de mortero MK252 para ARMA 3 es una aplicación React 18 con arqu
 - **CA-10:** La tabla de historial incluye columna "Tiempo" con formato `"X.XXs"`
 - **CA-11:** El reducer calcula las 3 cargas simultáneamente y las almacena en `state.resultadosActuales`
 - **CA-12:** La carga recomendada es la que tiene el menor `timeOfFlight` entre las cargas dentro de su rango efectivo; en empate se prefiere la de mayor número de carga
-- **CA-12a:** Ejemplo verificable: distancia 300m → recomendada es Ch2 (t=0.5s < Ch1 t=0.7s < Ch0 t=1.5s)
+- **CA-12a:** Ejemplo verificable: distancia 300m → recomendada es Ch2 (t=0.5s < Ch1 t=0.7s < Ch0 t=13.5s)
 - **CA-12b:** Ejemplo verificable: distancia 100m → recomendada es Ch0 (única en rango; Ch1 mín 150m, Ch2 mín 300m)
 - **CA-12c:** Ejemplo verificable: distancia 2000m → recomendada es Ch2 (única en rango; Ch0 máx 450m, Ch1 máx 1950m)
 - **CA-13:** La UI destaca visualmente la carga recomendada en sección principal (CSS class `recomendada`)
