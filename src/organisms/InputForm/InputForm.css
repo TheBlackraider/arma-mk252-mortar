@@ -9,3 +9,35 @@
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
+.carga-recomendada-principal {
+  background-color: #d4edda;
+  font-weight: bold;
+  border-left: 4px solid #28a745;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.badge-recomendada {
+  color: #28a745;
+  margin-right: 8px;
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.otras-cargas-en-rango {
+  margin-top: 8px;
+}
+
+.carga-row.secundaria {
+  padding: 4px 8px;
+  border-left: 2px solid #aaa;
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+
+.carga-row.fuera-de-rango {
+  color: #999;
+  padding: 4px 8px;
+  font-style: italic;
+}
