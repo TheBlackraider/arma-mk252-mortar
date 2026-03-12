@@ -1,8 +1,9 @@
 import { 
   findBaseCharge, 
-  getChargeForDistance, 
   calculateMission, 
-  getOptimalCharge,
+  getRecommendedCharge,
+  validateMissionInput,
+  calculateAllCharges,
   mainReducer,
   initialState 
 } from './main.reducer';
@@ -13,9 +14,9 @@ import Charge2 from '../data/Charge2';
 
 describe('findBaseCharge', () => {
   const mockChargeTable = [
-    { range: 100, elevation: 800, elevPer100m: 50 },
-    { range: 200, elevation: 1000, elevPer100m: 60 },
-    { range: 300, elevation: 1200, elevPer100m: 70 }
+    { range: 100, elevation: 800,  elevPer100m: 50, timeOfFlight: 10.0, timeOfFlightPer100m: 1.0 },
+    { range: 200, elevation: 1000, elevPer100m: 60, timeOfFlight: 9.0,  timeOfFlightPer100m: 1.2 },
+    { range: 300, elevation: 1200, elevPer100m: 70, timeOfFlight: 8.0,  timeOfFlightPer100m: 1.4 }
   ];
 
   test('returns first entry when no distance provided', () => {
@@ -27,25 +28,224 @@ describe('findBaseCharge', () => {
     expect(findBaseCharge(null)).toEqual({ range: -Infinity });
   });
 
-  test('finds correct charge for given distance', () => {
-    expect(findBaseCharge(mockChargeTable, 250)).toEqual(mockChargeTable[1]);
-    expect(findBaseCharge(mockChargeTable, 150)).toEqual(mockChargeTable[0]);
+  test('returns exact entry when distance matches a range exactly', () => {
+    expect(findBaseCharge(mockChargeTable, 200)).toEqual(mockChargeTable[1]);
+    expect(findBaseCharge(mockChargeTable, 100)).toEqual(mockChargeTable[0]);
+  });
+
+  test('interpolates elevation linearly between two entries', () => {
+    // 150m is halfway between 100 and 200
+    // elevation: 800 + 0.5*(1000-800) = 900
+    const result = findBaseCharge(mockChargeTable, 150);
+    expect(result.elevation).toBeCloseTo(900, 5);
+  });
+
+  test('interpolates elevPer100m linearly between two entries', () => {
+    // 150m: 50 + 0.5*(60-50) = 55
+    const result = findBaseCharge(mockChargeTable, 150);
+    expect(result.elevPer100m).toBeCloseTo(55, 5);
+  });
+
+  test('interpolates timeOfFlight linearly between two entries', () => {
+    // 150m: 10.0 + 0.5*(9.0-10.0) = 9.5
+    const result = findBaseCharge(mockChargeTable, 150);
+    expect(result.timeOfFlight).toBeCloseTo(9.5, 5);
+  });
+
+  test('interpolates timeOfFlightPer100m linearly between two entries', () => {
+    // 150m: 1.0 + 0.5*(1.2-1.0) = 1.1
+    const result = findBaseCharge(mockChargeTable, 150);
+    expect(result.timeOfFlightPer100m).toBeCloseTo(1.1, 5);
+  });
+
+  test('interpolates at non-midpoint (t=0.4)', () => {
+    // 140m between 100 and 200: t = (140-100)/(200-100) = 0.4
+    // elevation: 800 + 0.4*(1000-800) = 880
+    const result = findBaseCharge(mockChargeTable, 140);
+    expect(result.elevation).toBeCloseTo(880, 5);
+  });
+
+  test('returns first entry for distance below minimum range', () => {
+    expect(findBaseCharge(mockChargeTable, 50)).toEqual(mockChargeTable[0]);
+  });
+
+  test('returns last entry for distance above maximum range', () => {
+    expect(findBaseCharge(mockChargeTable, 400)).toEqual(mockChargeTable[2]);
+  });
+
+  test('Charge0 real data: 425m interpolates correctly between 400m and 450m', () => {
+    // t = (425-400)/(450-400) = 0.5
+    // elevation: 1127 + 0.5*(1029-1127) = 1078
+    // elevPer100m: 61 + 0.5*(91-61) = 76
+    // timeOfFlight: 12.8 + 0.5*(12.1-12.8) = 12.45
+    const result = findBaseCharge(Charge0, 425);
+    expect(result.elevation).toBeCloseTo(1078, 5);
+    expect(result.elevPer100m).toBeCloseTo(76, 5);
+    expect(result.timeOfFlight).toBeCloseTo(12.45, 5);
   });
 });
 
-describe('getChargeForDistance', () => {
-  test('returns ch0 for distance <= 400', () => {
-    expect(getChargeForDistance('300')).toBe('ch0');
-    expect(getChargeForDistance('400')).toBe('ch0');
+describe('getChargeForDistance — ELIMINADA', () => {
+  // Función eliminada en Hito 5 — tests eliminados
+});
+
+describe('getRecommendedCharge', () => {
+  const chargeTables = [Charge0, Charge1, Charge2];
+
+  test('returns ch0 for distance 300 — ch0 has lowest timeOfFlight (13.5 < 28.5 < 40.8)', () => {
+    expect(getRecommendedCharge(300, chargeTables)).toBe('ch0');
   });
 
-  test('returns ch1 for distance <= 1500', () => {
-    expect(getChargeForDistance('800')).toBe('ch1');
-    expect(getChargeForDistance('1500')).toBe('ch1');
+  test('returns ch0 for distance 100 — only ch0 in range (ch1 min 150, ch2 min 300)', () => {
+    expect(getRecommendedCharge(100, chargeTables)).toBe('ch0');
   });
 
-  test('returns ch2 for distance > 1500', () => {
-    expect(getChargeForDistance('2000')).toBe('ch2');
+  test('returns ch0 for distance 200 — ch0 tof 14.0 < ch1 tof 28.5', () => {
+    expect(getRecommendedCharge(200, chargeTables)).toBe('ch0');
+  });
+
+  test('returns ch2 for distance 2000 — only ch2 in range (ch0 max 450, ch1 max 1950)', () => {
+    expect(getRecommendedCharge(2000, chargeTables)).toBe('ch2');
+  });
+
+  test('returns ch0 at boundary 450m — ch0 max exactly, ch0 tof 12.1 < ch1 28.4 < ch2 40.7', () => {
+    expect(getRecommendedCharge(450, chargeTables)).toBe('ch0');
+  });
+
+  test('returns ch1 at boundary 1950m — ch1 max exactly, ch1 tof 22.3 < ch2 tof 39.5', () => {
+    expect(getRecommendedCharge(1950, chargeTables)).toBe('ch1');
+  });
+
+  test('prefers lower charge number on timeOfFlight tie', () => {
+    const mockCh0 = [{ range: 200, elevation: 1000, elevPer100m: 10, timeOfFlight: 5.0, timeOfFlightPer100m: 0.5 }];
+    const mockCh1 = [{ range: 200, elevation: 1000, elevPer100m: 10, timeOfFlight: 5.0, timeOfFlightPer100m: 0.5 }];
+    const mockCh2 = [{ range: 200, elevation: 1000, elevPer100m: 10, timeOfFlight: 6.0, timeOfFlightPer100m: 0.5 }];
+    // ch0 and ch1 both at 5.0, ch0 is lower number -> ch0 wins
+    // ranges: ch0 50-200, ch1 150-1950 for this mock test
+    // We use custom ranges via mock tables directly
+    expect(getRecommendedCharge(200, [mockCh0, mockCh1, mockCh2])).toBe('ch0');
+  });
+
+  test('returns null when distance is out of all ranges', () => {
+    expect(getRecommendedCharge(30, chargeTables)).toBeNull();
+  });
+});
+
+describe('validateMissionInput', () => {
+  test('returns valid for distance 300 and rumbo 1600', () => {
+    const result = validateMissionInput({ distancia: 300, rumbo: 1600 });
+    expect(result.valid).toBe(true);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  test('returns valid for minimum boundary distance 50', () => {
+    expect(validateMissionInput({ distancia: 50, rumbo: 0 }).valid).toBe(true);
+  });
+
+  test('returns valid for maximum boundary distance 4050', () => {
+    expect(validateMissionInput({ distancia: 4050, rumbo: 6400 }).valid).toBe(true);
+  });
+
+  test('returns invalid for distance 49 — below minimum', () => {
+    const result = validateMissionInput({ distancia: 49, rumbo: 1600 });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Distancia fuera de rango (50–4050m)');
+  });
+
+  test('returns invalid for distance 4051 — above maximum', () => {
+    const result = validateMissionInput({ distancia: 4051, rumbo: 1600 });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Distancia fuera de rango (50–4050m)');
+  });
+
+  test('returns invalid for rumbo -1', () => {
+    const result = validateMissionInput({ distancia: 300, rumbo: -1 });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Rumbo fuera de rango (0–6400 mils)');
+  });
+
+  test('returns invalid for rumbo 6401', () => {
+    const result = validateMissionInput({ distancia: 300, rumbo: 6401 });
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain('Rumbo fuera de rango (0–6400 mils)');
+  });
+
+  test('returns valid for string inputs that parse correctly', () => {
+    expect(validateMissionInput({ distancia: '300', rumbo: '1600' }).valid).toBe(true);
+  });
+
+  test('accumulates multiple errors', () => {
+    const result = validateMissionInput({ distancia: 10, rumbo: 7000 });
+    expect(result.errors).toHaveLength(2);
+  });
+});
+
+describe('calculateAllCharges', () => {
+  const baseItem = { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0 };
+
+  test('returns results for all 3 charges', () => {
+    const result = calculateAllCharges(baseItem);
+    expect(result).toHaveProperty('ch0');
+    expect(result).toHaveProperty('ch1');
+    expect(result).toHaveProperty('ch2');
+  });
+
+  test('each result has elevacion, azimuth, tiempo, recomendada, fuera_de_rango', () => {
+    const result = calculateAllCharges(baseItem);
+    ['ch0', 'ch1', 'ch2'].forEach(charge => {
+      expect(result[charge]).toHaveProperty('elevacion');
+      expect(result[charge]).toHaveProperty('azimuth');
+      expect(result[charge]).toHaveProperty('tiempo');
+      expect(result[charge]).toHaveProperty('recomendada');
+      expect(result[charge]).toHaveProperty('fuera_de_rango');
+    });
+  });
+
+  test('marks ch0 as recomendada for distance 300 — lowest timeOfFlight', () => {
+    const result = calculateAllCharges(baseItem);
+    expect(result.ch0.recomendada).toBe(true);
+    expect(result.ch1.recomendada).toBe(false);
+    expect(result.ch2.recomendada).toBe(false);
+  });
+
+  test('marks ch0 as recomendada for distance 100 — only in range', () => {
+    const result = calculateAllCharges({ ...baseItem, distancia: 100 });
+    expect(result.ch0.recomendada).toBe(true);
+    expect(result.ch1.recomendada).toBe(false);
+    expect(result.ch2.recomendada).toBe(false);
+  });
+
+  test('marks ch2 as recomendada for distance 2000 — only in range', () => {
+    const result = calculateAllCharges({ ...baseItem, distancia: 2000 });
+    expect(result.ch2.recomendada).toBe(true);
+    expect(result.ch0.recomendada).toBe(false);
+    expect(result.ch1.recomendada).toBe(false);
+  });
+
+  test('ch0 fuera_de_rango=false for distance 300 — within 50-450', () => {
+    const result = calculateAllCharges(baseItem);
+    expect(result.ch0.fuera_de_rango).toBe(false);
+  });
+
+  test('ch1 fuera_de_rango=true for distance 100 — ch1 min is 150', () => {
+    const result = calculateAllCharges({ ...baseItem, distancia: 100 });
+    expect(result.ch1.fuera_de_rango).toBe(true);
+  });
+
+  test('ch2 fuera_de_rango=true for distance 200 — ch2 min is 300', () => {
+    const result = calculateAllCharges({ ...baseItem, distancia: 200 });
+    expect(result.ch2.fuera_de_rango).toBe(true);
+  });
+
+  test('ch0 fuera_de_rango=true for distance 2000 — ch0 max is 450', () => {
+    const result = calculateAllCharges({ ...baseItem, distancia: 2000 });
+    expect(result.ch0.fuera_de_rango).toBe(true);
+  });
+
+  test('exactly one charge has recomendada=true for distance 300', () => {
+    const result = calculateAllCharges(baseItem);
+    const recommended = ['ch0', 'ch1', 'ch2'].filter(c => result[c].recomendada);
+    expect(recommended).toHaveLength(1);
   });
 });
 
@@ -163,20 +363,33 @@ describe('mainReducer', () => {
     expect(consoleSpy).not.toHaveBeenCalled();
     consoleSpy.mockRestore();
   });
+
+  test('does not modify state when distance is out of range (< 50)', () => {
+    const action = { type: CALCULATE_ITEM, payload: { distancia: 30, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' } };
+    expect(mainReducer(initialState, action)).toEqual(initialState);
+  });
+
+  test('does not modify state when rumbo is out of range (> 6400)', () => {
+    const action = { type: CALCULATE_ITEM, payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 7000, municion: 'ch0' } };
+    expect(mainReducer(initialState, action)).toEqual(initialState);
+  });
+
+  test('sets resultadosActuales after CALCULATE_ITEM', () => {
+    const action = { type: CALCULATE_ITEM, payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' } };
+    const result = mainReducer(initialState, action);
+    expect(result.resultadosActuales).not.toBeNull();
+    expect(result.resultadosActuales).toHaveProperty('ch0');
+    expect(result.resultadosActuales).toHaveProperty('ch1');
+    expect(result.resultadosActuales).toHaveProperty('ch2');
+  });
+
+  test('resultadosActuales has recomendada=true on ch0 for distance 300', () => {
+    const action = { type: CALCULATE_ITEM, payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' } };
+    const result = mainReducer(initialState, action);
+    expect(result.resultadosActuales.ch0.recomendada).toBe(true);
+  });
 });
 
-describe('getOptimalCharge', () => {
-  const mockResults = ['Charge1', 'Charge2', 'Charge0'];
-
-  test('returns Charge0 for distance < 500', () => {
-    expect(getOptimalCharge(400, mockResults)).toBe('Charge0');
-  });
-
-  test('returns Charge1 for distance < 2000', () => {
-    expect(getOptimalCharge(1500, mockResults)).toBe('Charge1');
-  });
-
-  test('returns Charge2 for distance >= 2000', () => {
-    expect(getOptimalCharge(2500, mockResults)).toBe('Charge2');
-  });
+describe('getOptimalCharge — ELIMINADA', () => {
+  // Función eliminada en Hito 5 — tests eliminados
 });
