@@ -539,6 +539,10 @@ La UI se divide en tres zonas bien diferenciadas:
 
 ## Hito 7: Columna "Tiempo" en tabla de historial
 
+**Estado:** COMPLETADO  
+**Commit:** `fe899d0` — feat: añadir columna Tiempo (s) en tabla de historial  
+**Fecha:** 2026-03-12  
+
 **Dependencia:** Hito 6  
 **Descripción:** Añadir columna `<th>Tiempo</th>` en la cabecera de `Table.js` y celda `<td>{item.tiempo.toFixed(2)}s</td>` en `TableRow.js`.
 
