@@ -54,6 +54,7 @@ describe('calculateMission', () => {
     range: 100,
     elevation: 1000,
     elevPer100m: 50,
+    timeOfFlight: 0.8,
     timeOfFlightPer100m: 0.5
   }];
 
@@ -69,9 +70,39 @@ describe('calculateMission', () => {
     expect(result).toEqual({
       ...mockItem,
       municion: 'ch0',
-      tiempo: 0.5,
+      tiempo: 0.8,
       resultado: 975 // 1000 - (50/100 * 50)
     });
+  });
+
+  test('should use timeOfFlight directly from table — Charge0 at 300m returns tiempo 1.5', () => {
+    const result = calculateMission(
+      { distancia: 300, altura: 0, alturaPropia: 0 },
+      0,
+      Charge0,
+      ['ch0', 'ch1', 'ch2']
+    );
+    expect(result.tiempo).toBe(1.5);
+  });
+
+  test('should use timeOfFlight directly from table — Charge1 at 1000m returns tiempo 0.7', () => {
+    const result = calculateMission(
+      { distancia: 1000, altura: 0, alturaPropia: 0 },
+      1,
+      Charge1,
+      ['ch0', 'ch1', 'ch2']
+    );
+    expect(result.tiempo).toBe(0.7);
+  });
+
+  test('should use timeOfFlight directly from table — Charge2 at 2000m returns tiempo 0.8', () => {
+    const result = calculateMission(
+      { distancia: 2000, altura: 0, alturaPropia: 0 },
+      2,
+      Charge2,
+      ['ch0', 'ch1', 'ch2']
+    );
+    expect(result.tiempo).toBe(0.8);
   });
 });
 

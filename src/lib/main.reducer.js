@@ -48,7 +48,7 @@ export const calculateMission = (item, municionIndex, chargeTable, municionTypes
     return {
         ...item,
         municion: municionTypes[municionIndex],
-        tiempo: base.timeOfFlightPer100m * (item.distancia / 100),
+        tiempo: base.timeOfFlight,
         resultado: item.altura > item.alturaPropia 
             ? base.elevation - correccion 
             : base.elevation + correccion
