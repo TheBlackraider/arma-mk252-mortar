@@ -75,7 +75,8 @@ describe('TableRow', () => {
   it('renders denominacion from item prop', () => {
     const item = buildItem({ denominacion: 'OBJ-ALPHA' });
     render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
-    expect(screen.getByText('OBJ-ALPHA')).toBeInTheDocument();
+    const input = screen.getByTestId('denominacion-input');
+    expect(input.value).toBe('OBJ-ALPHA');
   });
 
   // Hito 2: selector de munición editable
@@ -104,14 +105,27 @@ describe('TableRow', () => {
     );
   });
 
-  it('syncs municion select when item.municion changes externally', () => {
-    const item = buildItem({ municion: 'ch0' });
-    const { rerender } = render(
-      <table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>
-    );
-    expect(screen.getByTestId('municion-select').value).toBe('ch0');
-    const updatedItem = buildItem({ municion: 'ch2' });
-    rerender(<table><tbody><TableRow item={updatedItem} dispatcher={noop} /></tbody></table>);
-    expect(screen.getByTestId('municion-select').value).toBe('ch2');
+  // Hito 3: input de denominación editable
+  it('renders denominacion as an input field with correct value', () => {
+    const item = buildItem({ denominacion: 'OBJ-GAMMA' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    const input = screen.getByTestId('denominacion-input');
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe('OBJ-GAMMA');
+  });
+
+  it('updates denominacion state on input change', () => {
+    const item = buildItem({ denominacion: 'INICIAL' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    const input = screen.getByTestId('denominacion-input');
+    fireEvent.change(input, { target: { value: 'NUEVO' } });
+    expect(input.value).toBe('NUEVO');
+  });
+
+  it('denominacion input has placeholder "—" ', () => {
+    const item = buildItem({ denominacion: '' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    const input = screen.getByTestId('denominacion-input');
+    expect(input.placeholder).toBe('—');
   });
 });

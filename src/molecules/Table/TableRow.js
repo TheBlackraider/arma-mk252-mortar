@@ -41,7 +41,16 @@ export const TableRow = ({ item, dispatcher }) => {
           <button className="btn-action btn-action--delete" onClick={handleBorrar}>✕</button>
         </td>
         <td>{item.alturaPropia}</td>
-        <td className="td-denominacion">{denominacion || '—'}</td>
+        <td>
+          <input
+            className="td-input"
+            type="text"
+            value={denominacion}
+            onChange={e => setDenominacion(e.target.value)}
+            placeholder="—"
+            data-testid="denominacion-input"
+          />
+        </td>
         <td>
           <select
             className="td-input"
