@@ -182,6 +182,10 @@ Los tokens exactos provienen de `design-spec.md`. La estructura mínima esperada
 
 **Criterio de completado:** `npm test` en verde (los 68 + tests del Hito 1 + tests del Hito 2 todos pasan); la app se ve con el nuevo estilo al ejecutar `npm start`
 
+**Estado:** COMPLETADO  
+**Commit:** `3d23cd1` — feat: apply design tokens and modern layout (Hito 2)  
+**Fecha:** 2026-03-13
+
 ---
 
 ## Hito 3: Selector de munición deshabilitado + control pre-selección
@@ -228,6 +232,10 @@ useEffect(() => {
 - `should show 'ch0' as default when no calculation has been done` (verificar valor inicial)
 
 **Criterio de completado:** `npm test` en verde; el selector visualmente deshabilitado antes del primer cálculo
+
+**Estado:** COMPLETADO  
+**Commit:** `7880dd9` — feat: disable ammo selector until first calculation (Hito 3)  
+**Fecha:** 2026-03-13
 
 ---
 

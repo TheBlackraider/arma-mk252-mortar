@@ -119,6 +119,159 @@ sequenceDiagram
 
 ---
 
+## Hito 2: UI Redesign — CSS global y componentes estilizados
+**Fecha:** 2026-03-13  
+**Commit:** `3d23cd1`
+
+### Entidades
+
+| Nombre | Tipo | Acción | Archivo | Descripción |
+|--------|------|--------|---------|-------------|
+| `:root` design tokens | módulo | modificada | `src/index.css` | Bloque `:root` con 18 custom properties: colores, gradiente, radios, sombras, fuente y transición |
+| `* { box-sizing }` + `body` | módulo | modificada | `src/index.css` | Reset universal box-sizing; body con `--color-background`, `--font-family`, `margin: 0` |
+| `.App` | componente | modificada | `src/App.css` | Layout raíz; `min-height: 100vh`, fondo `--color-background` |
+| `.app-header` | componente | modificada | `src/App.css` | Header con `--color-header-gradient` (verde→azul), padding `24px 32px`, texto blanco |
+| `.app-header h1` | componente | modificada | `src/App.css` | Título principal: `1.75rem`, `font-weight: 700`, `letter-spacing: -0.5px` |
+| `.app-main` | componente | modificada | `src/App.css` | Contenedor principal centrado: `max-width: 1200px`, flex column, gap `24px` |
+| `App` | componente | modificada | `src/App.js` | Añadido `<header class="app-header">` y `<main class="app-main">` como estructura semántica |
+| `.calc-card`, `.charge-card`, `.results-panel` | módulo | modificada | `src/organisms/InputForm/InputForm.css` | Cards con sombras y radios de design tokens; panel de resultados flex-wrap |
+| `.btn-primary`, `.btn-secondary` | módulo | modificada | `src/organisms/InputForm/InputForm.css` | Botones con colores de tokens, transición `--transition-fast` |
+| `.form-input` | módulo | modificada | `src/organisms/InputForm/InputForm.css` | Input estilizado con borde `--color-border`, focus con `--color-primary` |
+| `.badge`, `.badge-success`, `.badge-warning`, `.badge-danger` | módulo | modificada | `src/organisms/InputForm/InputForm.css` | Sistema de badges pill con colores semánticos |
+| `.mission-table` | módulo | modificada | `src/molecules/Table/Table.css` | Tabla con `border-radius`, `overflow: hidden` y sombra card; filas hover con `--color-background` |
+| `App.test.js` | otro | creada | `src/App.test.js` | 3 tests RTL: `.app-header` presente, `.app-main` presente, `h1` contiene "MK252" |
+
+### Diagrama de Clases
+
+```mermaid
+classDiagram
+    class App {
+        <<componente>>
+        +render() JSX
+    }
+    note for App "div.App > header.app-header + main.app-main"
+
+    class AppCSS {
+        <<módulo CSS>>
+        +.App
+        +.app-header
+        +.app-header h1
+        +.app-header p
+        +.app-main
+    }
+
+    class IndexCSS {
+        <<módulo CSS>>
+        +:root design tokens
+        +box-sizing reset
+        +body base styles
+    }
+
+    class InputFormCSS {
+        <<módulo CSS>>
+        +.calc-card
+        +.charge-card
+        +.results-panel
+        +.btn-primary
+        +.btn-secondary
+        +.form-input
+        +.badge
+        +.badge-success
+        +.badge-warning
+        +.badge-danger
+    }
+
+    class TableCSS {
+        <<módulo CSS>>
+        +.mission-table
+        +.mission-table th
+        +.mission-table td
+    }
+
+    App --> AppCSS : imports
+    App --> IndexCSS : cascade
+    App --> InputFormCSS : cascade (via InputForm)
+    App --> TableCSS : cascade (via Table)
+```
+
+### Diagrama de Secuencia — Render de App con layout semántico
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant App
+    participant InputForm
+
+    Browser->>App: render()
+    App-->>Browser: div.App
+    App-->>Browser: header.app-header (gradient + título)
+    App-->>Browser: main.app-main
+    App->>InputForm: render()
+    InputForm-->>Browser: formulario + tabla dentro de main.app-main
+```
+
+---
+
+## Hito 3: Selector de munición deshabilitado + prop `disabled` en SelectBox
+**Fecha:** 2026-03-13  
+**Commit:** `7880dd9`
+
+### Entidades
+
+| Nombre | Tipo | Acción | Archivo | Descripción |
+|--------|------|--------|---------|-------------|
+| `SelectBox` | componente | modificada | `src/molecules/SelectBox/SelectBox.js` | Añadida prop `disabled` desestructurada y propagada al `<select>` nativo |
+| `InputForm` | componente | modificada | `src/organisms/InputForm/InputForm.js` | `SelectBox` de munición recibe `disabled={!state.resultadosActuales}` |
+| `SelectBox.test.js` | otro | creada | `src/molecules/SelectBox/SelectBox.test.js` | 3 tests: disabled=true deshabilita, disabled=false habilita, ausencia de prop no deshabilita |
+| `InputForm.test.js` | otro | modificada | `src/organisms/InputForm/InputForm.test.js` | 3 tests nuevos: selector deshabilitado con resultadosActuales=null, habilitado con resultados, valor inicial ch0 |
+
+### Diagrama de Clases
+
+```mermaid
+classDiagram
+    class SelectBox {
+        <<componente>>
+        +label: string
+        +placeholder: string
+        +options: string[]
+        +value: string
+        +onChange: function
+        +disabled: boolean
+        +render() JSX
+    }
+
+    class InputForm {
+        <<componente>>
+        -state: object
+        -municion: string
+        +render() JSX
+    }
+
+    InputForm --> SelectBox : disabled={!state.resultadosActuales}
+```
+
+### Diagrama de Secuencia — Control disabled del selector
+
+```mermaid
+sequenceDiagram
+    participant Usuario
+    participant InputForm
+    participant SelectBox
+    participant Reducer as mainReducer
+
+    Usuario->>InputForm: click "Calcular"
+    InputForm->>Reducer: dispatch(calculateItem(item))
+    Reducer-->>InputForm: state.resultadosActuales = { ch0, ch1, ch2 }
+    InputForm->>SelectBox: disabled={false} (resultadosActuales != null)
+    Note over SelectBox: selector habilitado
+
+    Note over InputForm: Antes del primer cálculo
+    InputForm->>SelectBox: disabled={true} (resultadosActuales = null)
+    Note over SelectBox: selector deshabilitado
+```
+
+---
+
 ## Hito 4: Botones borrar fila y borrar tabla
 **Fecha:** 2026-03-13  
 **Commit:** `065b043`
