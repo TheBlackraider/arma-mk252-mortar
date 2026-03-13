@@ -54,6 +54,11 @@ import './Table.css'
         <td>{item.resultado.toFixed(2)}</td>
         <td>{item.azimuth.toFixed(2)}</td>
         <td>{item.tiempo.toFixed(2)}s</td>
+        <td>
+          {item.tipoFuego === 'indirecto' && (
+            <span className="badge badge-warning">INDIRECTO</span>
+          )}
+        </td>
       </tr>   
     );
 }

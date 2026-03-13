@@ -31,4 +31,10 @@ describe('Table', () => {
     fireEvent.click(screen.getByText(/borrar todo/i));
     expect(dispatcher).toHaveBeenCalledWith(clearTable());
   });
+
+  // Test 7: Table renderiza columna "Tipo" en el header
+  it('renders Tipo column header', () => {
+    render(<Table misiones={[]} dispatch={() => {}} state={{ misiones: [] }} dispatcher={() => {}} />);
+    expect(screen.getByText(/tipo/i)).toBeInTheDocument();
+  });
 });

@@ -19,6 +19,7 @@ const Table = ({ dispatcher, state }) => {
           <th>Elevacion</th>
           <th>Azimuth</th>
           <th>Tiempo (s)</th>
+          <th>Tipo</th>
         </tr>
       </thead>
       <tbody>
@@ -28,7 +29,7 @@ const Table = ({ dispatcher, state }) => {
       </tbody>
       <tfoot>
         <tr>
-          <td colSpan={10}>
+          <td colSpan={11}>
             <button onClick={() => dispatcher(clearTable())}>Borrar todo</button>
           </td>
         </tr>

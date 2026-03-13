@@ -56,4 +56,18 @@ describe('TableRow', () => {
     fireEvent.click(screen.getByText(/borrar/i));
     expect(dispatcher).toHaveBeenCalledWith(deleteItem(item.key));
   });
+
+  // Test 5: muestra badge INDIRECTO cuando tipoFuego es 'indirecto'
+  it('shows INDIRECTO badge when tipoFuego is indirecto', () => {
+    const item = buildItem({ tipoFuego: 'indirecto' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    expect(screen.getByText(/indirecto/i)).toBeInTheDocument();
+  });
+
+  // Test 6: no muestra badge INDIRECTO cuando tipoFuego es 'directo'
+  it('does not show INDIRECTO badge when tipoFuego is directo', () => {
+    const item = buildItem({ tipoFuego: 'directo' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    expect(screen.queryByText(/indirecto/i)).not.toBeInTheDocument();
+  });
 });

@@ -4,6 +4,7 @@ import NumberBox from "../../molecules/NumberBox/NumberBox";
 import TextBox from "../../molecules/TextBox/TextBox";
 import SelectBox from "../../molecules/SelectBox/SelectBox";
 import { initialState, mainReducer } from "../../lib/main.reducer";
+import IndirectFireForm from "./IndirectFireForm";
 
 import "./InputForm.css";
 import { calculateItem } from "../../lib/main.actions";
@@ -81,6 +82,10 @@ const InputForm = () => {
     dispatch(calculateItem(item));
   };
 
+  const handleIndirectCalculate = ({ distancia: dist, rumbo: rum, tipoFuego }) => {
+    dispatch(calculateItem({ alturaPropia, denominacion, municion, distancia: dist, altura, rumbo: rum, tipoFuego }));
+  };
+
   useEffect(() => {
     setResultado(state.resultadoActual);
     setAzimuth(state.azimuthActual);
@@ -115,6 +120,9 @@ const InputForm = () => {
         </div>
 
         <ChargeResultsPanel resultadosActuales={state.resultadosActuales} />
+      </div>
+      <div>
+        <IndirectFireForm onCalculate={handleIndirectCalculate} />
       </div>
       <div>
         <Table dispatcher={dispatch} state={state} />
