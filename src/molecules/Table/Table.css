@@ -10,3 +10,39 @@
     line-height: 1.5;
     color: #212529;
 }
+
+.mission-table {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  border-collapse: collapse;
+}
+
+.mission-table th {
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.mission-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+}
+
+.mission-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mission-table tr:hover td {
+  background: var(--color-background);
+}
