@@ -45,7 +45,7 @@ describe('TableRow', () => {
     const dispatcher = jest.fn();
     const item = buildItem();
     render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
-    fireEvent.click(screen.getByText(/recalcular/i));
+    fireEvent.click(document.querySelector('.btn-action--recalc'));
     expect(dispatcher).toHaveBeenCalledWith(recalculateItem(expect.objectContaining({ key: item.key })));
   });
 
@@ -53,7 +53,7 @@ describe('TableRow', () => {
     const dispatcher = jest.fn();
     const item = buildItem();
     render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
-    fireEvent.click(screen.getByText(/borrar/i));
+    fireEvent.click(document.querySelector('.btn-action--delete'));
     expect(dispatcher).toHaveBeenCalledWith(deleteItem(item.key));
   });
 

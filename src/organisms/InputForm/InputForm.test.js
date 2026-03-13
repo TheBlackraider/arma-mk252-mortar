@@ -53,31 +53,35 @@ describe('InputForm — resultado-actual section', () => {
     renderWithState({ ...stateWithResultados });
   });
 
-  test('renders Elevación (mils): label in resultado-actual section', () => {
-    expect(screen.getByText(/Elevación \(mils\):/)).toBeInTheDocument();
+  test('renders Elevación label in resultado-actual section', () => {
+    const panel = document.querySelector('.resultado-actual');
+    expect(panel).toBeInTheDocument();
+    expect(panel.textContent).toMatch(/Elevación/);
   });
 
-  test('renders Azimuth (mils): label in resultado-actual section', () => {
-    expect(screen.getByText(/Azimuth \(mils\):/)).toBeInTheDocument();
+  test('renders Azimuth label in resultado-actual section', () => {
+    const panel = document.querySelector('.resultado-actual');
+    expect(panel).toBeInTheDocument();
+    expect(panel.textContent).toMatch(/Azimuth/);
   });
 
-  test('renders Tiempo de vuelo (s): label in resultado-actual section', () => {
-    expect(screen.getByText(/Tiempo de vuelo \(s\):/)).toBeInTheDocument();
+  test('renders Tiempo vuelo label in resultado-actual section', () => {
+    expect(screen.getByText(/Tiempo vuelo/)).toBeInTheDocument();
   });
 });
 
 describe('InputForm — resultados-cargas panel', () => {
-  test('does not render resultados-cargas panel when resultadosActuales is null', () => {
+  test('does not render results-panel when resultadosActuales is null', () => {
     renderWithState({
       ...stateWithResultados,
       resultadosActuales: null,
     });
-    expect(document.querySelector('.resultados-cargas')).toBeNull();
+    expect(document.querySelector('.results-panel')).toBeNull();
   });
 
-  test('renders resultados-cargas panel when resultadosActuales is set', () => {
+  test('renders results-panel when resultadosActuales is set', () => {
     renderWithState({ ...stateWithResultados });
-    expect(document.querySelector('.resultados-cargas')).toBeInTheDocument();
+    expect(document.querySelector('.results-panel')).toBeInTheDocument();
   });
 
   test('renders RECOMENDADA badge on the recommended charge', () => {
@@ -85,16 +89,15 @@ describe('InputForm — resultados-cargas panel', () => {
     expect(screen.getByText('RECOMENDADA')).toBeInTheDocument();
   });
 
-  test('renders otras-cargas-en-rango section for non-recommended in-range charges', () => {
+  test('renders in-range non-recommended charge cards', () => {
     renderWithState({ ...stateWithResultados });
-    expect(screen.getByText('Otras opciones en rango')).toBeInTheDocument();
-    expect(document.querySelector('.otras-cargas-en-rango')).toBeInTheDocument();
+    expect(document.querySelector('.charge-card:not(.charge-card--recommended)')).toBeInTheDocument();
   });
 
   test('renders FUERA DE RANGO label for out-of-range charges', () => {
     renderWithState({ ...stateWithResultados });
     expect(screen.getByText('FUERA DE RANGO')).toBeInTheDocument();
-    expect(document.querySelector('.carga-row.fuera-de-rango')).toBeInTheDocument();
+    expect(document.querySelector('.charge-card--out-of-range')).toBeInTheDocument();
   });
 });
 

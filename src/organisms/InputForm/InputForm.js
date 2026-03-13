@@ -24,34 +24,51 @@ const ChargeResultsPanel = ({ resultadosActuales }) => {
   const fueraDeRango = cargas.filter(c => resultadosActuales[c].fuera_de_rango);
 
   return (
-    <div className="resultados-cargas">
-      <h3>Resultados por carga</h3>
-      {recomendada && (
-        <div className="carga-recomendada-principal">
-          <span className="badge-recomendada">RECOMENDADA</span>
-          <span>{recomendada.toUpperCase()}</span>
-          <span>Elev: {resultadosActuales[recomendada].elevacion.toFixed(2)} mils</span>
-          <span>Tiempo: {resultadosActuales[recomendada].tiempo.toFixed(2)}s</span>
-        </div>
-      )}
-      {enRangoOtras.length > 0 && (
-        <div className="otras-cargas-en-rango">
-          <h4>Otras opciones en rango</h4>
-          {enRangoOtras.map(charge => (
-            <div key={charge} className="carga-row secundaria">
-              <span>{charge.toUpperCase()}</span>
-              <span>Elev: {resultadosActuales[charge].elevacion.toFixed(2)} mils</span>
-              <span>Tiempo: {resultadosActuales[charge].tiempo.toFixed(2)}s</span>
+    <div className="results-panel">
+      <h3 className="results-panel__title">Resultados por carga</h3>
+      <div className="results-panel__cards">
+        {recomendada && (
+          <div className="charge-card charge-card--recommended">
+            <div className="charge-card__header">
+              <span className="badge badge-success">RECOMENDADA</span>
+              <span className="charge-card__name">{recomendada.toUpperCase()}</span>
             </div>
-          ))}
-        </div>
-      )}
-      {fueraDeRango.map(charge => (
-        <div key={charge} className="carga-row fuera-de-rango">
-          <span>{charge.toUpperCase()}</span>
-          <span>FUERA DE RANGO</span>
-        </div>
-      ))}
+            <div className="charge-card__stat">
+              <span className="charge-card__label">Elevación</span>
+              <span className="charge-card__value">{resultadosActuales[recomendada].elevacion.toFixed(2)} mils</span>
+            </div>
+            <div className="charge-card__stat">
+              <span className="charge-card__label">Tiempo</span>
+              <span className="charge-card__value">{resultadosActuales[recomendada].tiempo.toFixed(2)} s</span>
+            </div>
+          </div>
+        )}
+        {enRangoOtras.map(charge => (
+          <div key={charge} className="charge-card">
+            <div className="charge-card__header">
+              <span className="charge-card__name">{charge.toUpperCase()}</span>
+            </div>
+            <div className="charge-card__stat">
+              <span className="charge-card__label">Elevación</span>
+              <span className="charge-card__value">{resultadosActuales[charge].elevacion.toFixed(2)} mils</span>
+            </div>
+            <div className="charge-card__stat">
+              <span className="charge-card__label">Tiempo</span>
+              <span className="charge-card__value">{resultadosActuales[charge].tiempo.toFixed(2)} s</span>
+            </div>
+          </div>
+        ))}
+        {fueraDeRango.map(charge => (
+          <div key={charge} className="charge-card charge-card--out-of-range">
+            <div className="charge-card__header">
+              <span className="charge-card__name">{charge.toUpperCase()}</span>
+            </div>
+            <div className="charge-card__stat">
+              <span className="badge badge-danger">FUERA DE RANGO</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -100,34 +117,73 @@ const InputForm = () => {
   }, [state.resultadosActuales]);
 
   return (
-    <>
-      <div>
-        <NumberBox name="alturaPropia" label="Altura Propia" placeholder="Altura del arma" value={alturaPropia} onChange={setAlturaPropia} />
+    <div className="form-layout">
 
-        <form className="input-form">
-          <TextBox name="denominacion" label="Denominacion" placeholder="Denominacion del objetivo" value={denominacion} onChange={setDenominacion} />
-          <SelectBox name="municion" label="Municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} disabled={!state.resultadosActuales} />
-          <NumberBox name="distancia" label="Distancia" placeholder="Distancia al objetivo" value={distancia} onChange={setDistancia} />
-          <NumberBox name="altura" label="Altura" placeholder="Altura del objetivo" value={altura} onChange={setAltura} />
-          <NumberBox name="rumbo" label="Rumbo" placeholder="Rumbo al objetivo" value={rumbo} onChange={setRumbo} />
-          <button onClick={handleClick}>Calcular</button>
-        </form>
+      {/* ── Columna izquierda: formulario de entrada ── */}
+      <section className="calc-card">
+        <h2 className="calc-card__title">Parámetros de disparo</h2>
 
-        <div className="resultado-actual">
-          <p><strong>Elevación (mils):</strong> {resultado.toFixed(2)}</p>
-          <p><strong>Azimuth (mils):</strong> {azimuth.toFixed(2)}</p>
-          <p><strong>Tiempo de vuelo (s):</strong> {tiempo.toFixed(2)}</p>
+        <div className="form-field">
+          <label className="form-label">Altura Propia</label>
+          <NumberBox name="alturaPropia" placeholder="Altura del arma" value={alturaPropia} onChange={setAlturaPropia} />
         </div>
 
+        <form className="input-form" data-testid="input-form">
+          <div className="form-field">
+            <label className="form-label">Denominación</label>
+            <TextBox name="denominacion" placeholder="Denominacion del objetivo" value={denominacion} onChange={setDenominacion} />
+          </div>
+          <div className="form-field">
+            <label className="form-label">Munición</label>
+            <SelectBox name="municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} disabled={!state.resultadosActuales} />
+          </div>
+          <div className="form-row">
+            <div className="form-field">
+              <label className="form-label">Distancia (m)</label>
+              <NumberBox name="distancia" placeholder="Distancia" value={distancia} onChange={setDistancia} />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Altura (m)</label>
+              <NumberBox name="altura" placeholder="Altura obj." value={altura} onChange={setAltura} />
+            </div>
+            <div className="form-field">
+              <label className="form-label">Rumbo (mils)</label>
+              <NumberBox name="rumbo" placeholder="Rumbo" value={rumbo} onChange={setRumbo} />
+            </div>
+          </div>
+          <button className="btn-primary btn-full" onClick={handleClick}>Calcular</button>
+        </form>
+
+        {state.resultadosActuales && (
+          <div className="resultado-actual">
+            <div className="resultado-actual__item">
+              <span className="resultado-actual__label">Elevación</span>
+              <span className="resultado-actual__value">{resultado.toFixed(2)} mils</span>
+            </div>
+            <div className="resultado-actual__item">
+              <span className="resultado-actual__label">Azimuth</span>
+              <span className="resultado-actual__value">{azimuth.toFixed(2)} mils</span>
+            </div>
+            <div className="resultado-actual__item">
+              <span className="resultado-actual__label">Tiempo vuelo</span>
+              <span className="resultado-actual__value">{tiempo.toFixed(2)} s</span>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── Columna derecha: resultados por carga ── */}
+      <div className="right-column">
         <ChargeResultsPanel resultadosActuales={state.resultadosActuales} />
-      </div>
-      <div>
         <IndirectFireForm onCalculate={handleIndirectCalculate} />
       </div>
-      <div>
+
+      {/* ── Historial de misiones ── */}
+      <section className="table-section">
         <Table dispatcher={dispatch} state={state} />
-      </div>
-    </>
+      </section>
+
+    </div>
   );
 };
 

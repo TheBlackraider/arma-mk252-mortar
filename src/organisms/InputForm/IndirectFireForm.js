@@ -21,18 +21,24 @@ function IndirectFireForm({ onCalculate }) {
   return (
     <form className="indirect-fire-card" onSubmit={handleSubmit}>
       <h3>Fuego Indirecto por Observador</h3>
-      <label>Distancia Mortero→Observador (m)
-        <input type="number" value={d_mo} onChange={e => setD_mo(e.target.value)} />
-      </label>
-      <label>Rumbo Mortero→Observador (mils)
-        <input type="number" value={rumbo_mo} onChange={e => setRumbo_mo(e.target.value)} />
-      </label>
-      <label>Distancia Observador→Objetivo (m)
-        <input type="number" value={d_oo} onChange={e => setD_oo(e.target.value)} />
-      </label>
-      <label>Rumbo relativo Obs→Obj (mils)
-        <input type="number" value={rumbo_relativo_oo} onChange={e => setRumbo_relativo_oo(e.target.value)} />
-      </label>
+      <div className="indirect-row">
+        <label>
+          Dist. Mortero→Obs (m)
+          <input type="number" value={d_mo} onChange={e => setD_mo(e.target.value)} placeholder="0" />
+        </label>
+        <label>
+          Rumbo Mortero→Obs (mils)
+          <input type="number" value={rumbo_mo} onChange={e => setRumbo_mo(e.target.value)} placeholder="0" />
+        </label>
+        <label>
+          Dist. Obs→Objetivo (m)
+          <input type="number" value={d_oo} onChange={e => setD_oo(e.target.value)} placeholder="0" />
+        </label>
+        <label>
+          Rumbo relativo Obs→Obj (mils)
+          <input type="number" value={rumbo_relativo_oo} onChange={e => setRumbo_relativo_oo(e.target.value)} placeholder="0" />
+        </label>
+      </div>
       <button type="submit" className="btn-primary">Calcular Indirecto</button>
     </form>
   );

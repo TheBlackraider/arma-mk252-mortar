@@ -1,36 +1,77 @@
+/* ══════════════════════════════════════════════════════════
+   Layout raíz
+   ══════════════════════════════════════════════════════════ */
+
+.form-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  grid-template-rows: auto auto;
+  gap: 24px;
+  align-items: start;
+}
+
+.table-section {
+  grid-column: 1 / -1;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Calc card — formulario de entrada
+   ══════════════════════════════════════════════════════════ */
 
 .calc-card {
   background: var(--color-surface);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 24px;
-  flex: 0 0 320px;
 }
 
-.calc-card:hover {
-  box-shadow: var(--shadow-card-hover);
-  transition: box-shadow var(--transition-fast);
+.calc-card__title {
+  margin: 0 0 20px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.3px;
 }
 
-.results-panel {
+.input-form {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.charge-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  padding: 20px;
-  min-width: 180px;
-  flex: 1 1 180px;
+/* ══════════════════════════════════════════════════════════
+   Form fields
+   ══════════════════════════════════════════════════════════ */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.charge-card.recommended {
-  border: 2px solid var(--color-success);
+.form-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Botones
+   ══════════════════════════════════════════════════════════ */
 
 .btn-primary {
   background: var(--color-primary);
@@ -38,6 +79,7 @@
   border: none;
   border-radius: var(--radius-btn);
   padding: 10px 20px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -47,22 +89,54 @@
   background: var(--color-primary-dark);
 }
 
+.btn-full {
+  width: 100%;
+  margin-top: 4px;
+}
+
 .btn-secondary {
   background: transparent;
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-btn);
-  padding: 10px 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
 }
+
+.btn-secondary:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-btn);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btn-danger:hover {
+  background: #fee2e2;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Form input (atoms)
+   ══════════════════════════════════════════════════════════ */
 
 .form-input {
   width: 100%;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-btn);
   padding: 8px 12px;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: var(--color-text-primary);
   background: var(--color-surface);
   outline: none;
@@ -71,16 +145,193 @@
 
 .form-input:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79,172,254,0.15);
 }
+
+.form-input:disabled {
+  background: var(--color-background);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════════════════════════════════
+   Resultado actual (mini panel debajo del form)
+   ══════════════════════════════════════════════════════════ */
+
+.resultado-actual {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--color-background);
+  border-radius: var(--radius-btn);
+  border-left: 3px solid var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resultado-actual__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultado-actual__label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.resultado-actual__value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Results panel — cargas
+   ══════════════════════════════════════════════════════════ */
+
+.results-panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+}
+
+.results-panel__title {
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.results-panel__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.charge-card {
+  background: var(--color-background);
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 150px;
+  flex: 1 1 150px;
+  border: 1px solid var(--color-border);
+}
+
+.charge-card--recommended {
+  background: #f0fdf4;
+  border-color: var(--color-success);
+  border-width: 2px;
+}
+
+.charge-card--out-of-range {
+  opacity: 0.55;
+}
+
+.charge-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.charge-card__name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+}
+
+.charge-card__stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.charge-card__label {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.charge-card__value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Indirect fire card
+   ══════════════════════════════════════════════════════════ */
+
+.indirect-fire-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.indirect-fire-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.indirect-fire-card .indirect-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.indirect-fire-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.indirect-fire-card input[type="number"] {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  margin-top: 2px;
+}
+
+.indirect-fire-card input[type="number"]:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79,172,254,0.15);
+}
+
+/* ══════════════════════════════════════════════════════════
+   Badges
+   ══════════════════════════════════════════════════════════ */
 
 .badge {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 99px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .badge-success {
@@ -96,47 +347,4 @@
 .badge-danger {
   background: #fee2e2;
   color: var(--color-danger);
-}
-
-.input-form {
-    width: 20rem;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: #f5f5f5;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.carga-recomendada-principal {
-  background-color: #d4edda;
-  font-weight: bold;
-  border-left: 4px solid #28a745;
-  padding: 8px;
-  margin-bottom: 8px;
-}
-
-.badge-recomendada {
-  color: #28a745;
-  margin-right: 8px;
-  font-size: 0.8em;
-  text-transform: uppercase;
-}
-
-.otras-cargas-en-rango {
-  margin-top: 8px;
-}
-
-.carga-row.secundaria {
-  padding: 4px 8px;
-  border-left: 2px solid #aaa;
-  margin-bottom: 4px;
-  font-size: 0.9em;
-}
-
-.carga-row.fuera-de-rango {
-  color: #999;
-  padding: 4px 8px;
-  font-style: italic;
 }
