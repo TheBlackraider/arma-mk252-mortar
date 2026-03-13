@@ -7,6 +7,7 @@ export const TableRow = ({ item, dispatcher }) => {
     const [distancia, setDistancia] = useState(item.distancia);
     const [altura, setAltura] = useState(item.altura);
     const [rumbo, setRumbo] = useState(item.rumbo);
+    const [denominacion, setDenominacion] = useState(item.denominacion || '');
 
     useEffect(() => {
         setDistancia(item.distancia);
@@ -14,9 +15,13 @@ export const TableRow = ({ item, dispatcher }) => {
         setRumbo(item.rumbo);
     }, [item.distancia, item.altura, item.rumbo]);
 
+    useEffect(() => {
+        setDenominacion(item.denominacion || '');
+    }, [item.denominacion]);
+
     const handleRecalcular = (e) => {
         e.preventDefault();
-        dispatcher(recalculateItem({ ...item, distancia, altura, rumbo }));
+        dispatcher(recalculateItem({ ...item, distancia, altura, rumbo, denominacion }));
     };
 
     const handleBorrar = (e) => {
@@ -31,7 +36,7 @@ export const TableRow = ({ item, dispatcher }) => {
           <button className="btn-action btn-action--delete" onClick={handleBorrar}>✕</button>
         </td>
         <td>{item.alturaPropia}</td>
-        <td className="td-denominacion">{item.denominacion || '—'}</td>
+        <td className="td-denominacion">{denominacion || '—'}</td>
         <td>{item.municion?.toUpperCase()}</td>
         <td>
           <input

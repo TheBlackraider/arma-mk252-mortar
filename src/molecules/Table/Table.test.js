@@ -37,4 +37,16 @@ describe('Table', () => {
     render(<Table misiones={[]} dispatch={() => {}} state={{ misiones: [] }} dispatcher={() => {}} />);
     expect(screen.getByText(/tipo/i)).toBeInTheDocument();
   });
+
+  // BUG 2: Rumbo header debe mostrar grados (°), no mils
+  it('renders Rumbo column header with degrees symbol', () => {
+    render(<Table misiones={[]} state={{ misiones: [] }} dispatcher={() => {}} />);
+    expect(screen.getByText('Rumbo (°)')).toBeInTheDocument();
+  });
+
+  // BUG 2: Azimuth header debe mostrar mils
+  it('renders Azimuth column header with mils', () => {
+    render(<Table misiones={[]} state={{ misiones: [] }} dispatcher={() => {}} />);
+    expect(screen.getByText('Azimuth (mils)')).toBeInTheDocument();
+  });
 });

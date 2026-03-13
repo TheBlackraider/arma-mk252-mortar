@@ -1,4 +1,4 @@
-import React, { useReducer, useState, useEffect } from "react";
+import React, { useReducer, useState, useEffect, useRef } from "react";
 
 import NumberBox from "../../molecules/NumberBox/NumberBox";
 import TextBox from "../../molecules/TextBox/TextBox";
@@ -76,6 +76,8 @@ const ChargeResultsPanel = ({ resultadosActuales }) => {
 
 // ─── InputForm ────────────────────────────────────────────────────────────────
 
+const MILS_TO_DEGREES = 360 / 6400;
+
 const InputForm = () => {
 
   const [state, dispatch] = useReducer(mainReducer, initialState);
@@ -91,6 +93,8 @@ const InputForm = () => {
   const [azimuth, setAzimuth] = useState(0);
   const [tiempo, setTiempo] = useState(0);
 
+  const hasPreselected = useRef(false);
+
   const optionsMunicion = ["Ch0", "Ch1", "Ch2"];
 
   const handleClick = (event) => {
@@ -99,8 +103,9 @@ const InputForm = () => {
     dispatch(calculateItem(item));
   };
 
-  const handleIndirectCalculate = ({ distancia: dist, rumbo: rum, tipoFuego }) => {
-    dispatch(calculateItem({ alturaPropia, denominacion, municion, distancia: dist, altura, rumbo: rum, tipoFuego }));
+  const handleIndirectCalculate = ({ distancia: dist, rumbo: rumMils, tipoFuego }) => {
+    const rumbo = Math.round(rumMils * MILS_TO_DEGREES);
+    dispatch(calculateItem({ alturaPropia, denominacion, municion, distancia: dist, altura, rumbo, tipoFuego }));
   };
 
   useEffect(() => {
@@ -110,10 +115,17 @@ const InputForm = () => {
   }, [state.resultadoActual, state.azimuthActual, state.tiempoActual]);
 
   useEffect(() => {
-    if (!state.resultadosActuales) return;
+    if (!state.resultadosActuales) {
+      hasPreselected.current = false; // reset cuando se borra todo
+      return;
+    }
+    if (hasPreselected.current) return; // ya se pre-seleccionó, no sobreescribir
     const recomendada = Object.keys(state.resultadosActuales)
       .find(charge => state.resultadosActuales[charge].recomendada);
-    if (recomendada) setMunicion(recomendada);
+    if (recomendada) {
+      setMunicion(recomendada);
+      hasPreselected.current = true;
+    }
   }, [state.resultadosActuales]);
 
   return (
@@ -147,7 +159,7 @@ const InputForm = () => {
               <NumberBox name="altura" placeholder="Altura obj." value={altura} onChange={setAltura} />
             </div>
             <div className="form-field">
-              <label className="form-label">Rumbo (mils)</label>
+              <label className="form-label">Rumbo (°)</label>
               <NumberBox name="rumbo" placeholder="Rumbo" value={rumbo} onChange={setRumbo} />
             </div>
           </div>

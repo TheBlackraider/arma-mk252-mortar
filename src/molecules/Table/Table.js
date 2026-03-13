@@ -20,9 +20,9 @@ const Table = ({ dispatcher, state }) => {
               <th>Municion</th>
               <th>Distancia</th>
               <th>Altura Obj.</th>
-              <th>Rumbo</th>
+              <th>Rumbo (°)</th>
               <th>Elevacion</th>
-              <th>Azimuth</th>
+              <th>Azimuth (mils)</th>
               <th>Tiempo (s)</th>
               <th>Tipo</th>
             </tr>

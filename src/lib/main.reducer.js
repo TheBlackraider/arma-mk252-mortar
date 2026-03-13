@@ -90,8 +90,8 @@ export const validateMissionInput = (item) => {
     if (isNaN(distancia) || distancia < 50 || distancia > 4050) {
         errors.push('Distancia fuera de rango (50–4050m)');
     }
-    if (isNaN(rumbo) || rumbo < 0 || rumbo > 6400) {
-        errors.push('Rumbo fuera de rango (0–6400 mils)');
+    if (isNaN(rumbo) || rumbo < 0 || rumbo > 360) {
+        errors.push('Rumbo fuera de rango (0–360°)');
     }
     return { valid: errors.length === 0, errors };
 };

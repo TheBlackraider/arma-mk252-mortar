@@ -70,4 +70,22 @@ describe('TableRow', () => {
     render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
     expect(screen.queryByText(/indirecto/i)).not.toBeInTheDocument();
   });
+
+  // BUG 3: denominacion debe mostrarse desde el prop item
+  it('renders denominacion from item prop', () => {
+    const item = buildItem({ denominacion: 'OBJ-ALPHA' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    expect(screen.getByText('OBJ-ALPHA')).toBeInTheDocument();
+  });
+
+  // BUG 3: denominacion se mantiene tras recalcular (estado local sincronizado)
+  it('includes denominacion in recalculateItem dispatch', () => {
+    const dispatcher = jest.fn();
+    const item = buildItem({ denominacion: 'OBJ-BRAVO' });
+    render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
+    fireEvent.click(document.querySelector('.btn-action--recalc'));
+    expect(dispatcher).toHaveBeenCalledWith(
+      recalculateItem(expect.objectContaining({ denominacion: 'OBJ-BRAVO' }))
+    );
+  });
 });

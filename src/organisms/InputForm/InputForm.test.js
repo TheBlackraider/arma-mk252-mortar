@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // ─── Mock useReducer to control InputForm state ───────────────────────────────
@@ -142,5 +142,45 @@ describe('InputForm — municion selector disabled state', () => {
     });
     const selects = screen.getAllByRole('combobox');
     expect(selects[0].value.toLowerCase()).toBe('ch0');
+  });
+});
+
+describe('InputForm — Rumbo label in degrees', () => {
+  // BUG 2: el label del campo Rumbo debe mostrar grados (°), no mils
+  test('rumbo label shows degrees symbol (°)', () => {
+    renderWithState({ ...stateWithResultados, resultadosActuales: null });
+    const labels = screen.getAllByText(/Rumbo \(°\)/i);
+    expect(labels.length).toBeGreaterThanOrEqual(1);
+    // Al menos uno debe ser un label del formulario
+    const formLabel = labels.find(el => el.tagName.toLowerCase() === 'label');
+    expect(formLabel).toBeInTheDocument();
+  });
+});
+
+describe('InputForm — municion selector keeps selection after recalculation (BUG 1)', () => {
+  test('municion selector keeps user selection after recalculation', () => {
+    // Primer render: ch0 es recomendada → el selector debe pre-seleccionar ch0
+    const { rerender } = renderWithState({ ...stateWithResultados });
+    const selects = screen.getAllByRole('combobox');
+    const municionSelect = selects[0];
+    // Verificar que ch0 fue pre-seleccionada
+    expect(municionSelect.value.toLowerCase()).toBe('ch0');
+
+    // Usuario cambia a ch1 manualmente
+    fireEvent.change(municionSelect, { target: { value: 'ch1' } });
+    expect(municionSelect.value.toLowerCase()).toBe('ch1');
+
+    // Nuevo cálculo: resultadosActuales cambia pero ch0 sigue siendo recomendada
+    const newResultados = {
+      ch0: { elevacion: 810.0, azimuth: 1100.0, tiempo: 13.0, recomendada: true,  fuera_de_rango: false },
+      ch1: { elevacion: 760.0, azimuth: 1100.0, tiempo: 28.0, recomendada: false, fuera_de_rango: false },
+      ch2: { elevacion: 730.0, azimuth: 1100.0, tiempo: 40.0, recomendada: false, fuera_de_rango: true  },
+    };
+    mockState = { ...stateWithResultados, resultadosActuales: newResultados, index: 3 };
+    rerender(<InputForm />);
+
+    // El selector debe mantener la selección manual del usuario (ch1), no volver a ch0
+    const selectsAfter = screen.getAllByRole('combobox');
+    expect(selectsAfter[0].value.toLowerCase()).toBe('ch1');
   });
 });

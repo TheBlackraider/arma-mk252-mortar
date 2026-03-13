@@ -134,8 +134,8 @@ describe('getRecommendedCharge', () => {
 });
 
 describe('validateMissionInput', () => {
-  test('returns valid for distance 300 and rumbo 1600', () => {
-    const result = validateMissionInput({ distancia: 300, rumbo: 1600 });
+  test('returns valid for distance 300 and rumbo 180 (degrees)', () => {
+    const result = validateMissionInput({ distancia: 300, rumbo: 180 });
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
@@ -145,7 +145,7 @@ describe('validateMissionInput', () => {
   });
 
   test('returns valid for maximum boundary distance 4050', () => {
-    expect(validateMissionInput({ distancia: 4050, rumbo: 6400 }).valid).toBe(true);
+    expect(validateMissionInput({ distancia: 4050, rumbo: 360 }).valid).toBe(true);
   });
 
   test('returns invalid for distance 49 — below minimum', () => {
@@ -163,22 +163,32 @@ describe('validateMissionInput', () => {
   test('returns invalid for rumbo -1', () => {
     const result = validateMissionInput({ distancia: 300, rumbo: -1 });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Rumbo fuera de rango (0–6400 mils)');
+    expect(result.errors).toContain('Rumbo fuera de rango (0–360°)');
   });
 
   test('returns invalid for rumbo 6401', () => {
     const result = validateMissionInput({ distancia: 300, rumbo: 6401 });
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Rumbo fuera de rango (0–6400 mils)');
+    expect(result.errors).toContain('Rumbo fuera de rango (0–360°)');
   });
 
   test('returns valid for string inputs that parse correctly', () => {
-    expect(validateMissionInput({ distancia: '300', rumbo: '1600' }).valid).toBe(true);
+    expect(validateMissionInput({ distancia: '300', rumbo: '180' }).valid).toBe(true);
   });
 
   test('accumulates multiple errors', () => {
     const result = validateMissionInput({ distancia: 10, rumbo: 7000 });
     expect(result.errors).toHaveLength(2);
+  });
+
+  test('validateMissionInput rejects rumbo > 360', () => {
+    const result = validateMissionInput({ distancia: 500, rumbo: 400 });
+    expect(result.valid).toBe(false);
+  });
+
+  test('validateMissionInput accepts rumbo = 360', () => {
+    const result = validateMissionInput({ distancia: 500, rumbo: 360 });
+    expect(result.valid).toBe(true);
   });
 });
 
