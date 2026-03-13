@@ -5,9 +5,11 @@ import {
   validateMissionInput,
   calculateAllCharges,
   mainReducer,
-  initialState 
+  initialState,
+  triangulateObserver,
 } from './main.reducer';
-import { CALCULATE_ITEM, GET_ALL_ITEMS } from './main.actions';
+import { CALCULATE_ITEM, GET_ALL_ITEMS, RECALCULATE_ITEM, DELETE_ITEM, CLEAR_TABLE } from './main.actions';
+import { Mision } from '../data/mision.entity';
 import Charge0 from '../data/Charge0';
 import Charge1 from '../data/Charge1';
 import Charge2 from '../data/Charge2';
@@ -402,4 +404,205 @@ describe('mainReducer', () => {
 
 describe('getOptimalCharge — ELIMINADA', () => {
   // Función eliminada en Hito 5 — tests eliminados
+});
+
+// ─── HITO 1: nuevas acciones + triangulateObserver ───────────────────────────
+
+describe('triangulateObserver', () => {
+  test('should calculate correct distance and heading for orthogonal case', () => {
+    // obs al Sur 300m (rumbo_mo=3200), objetivo al Este del obs 400m (rumbo_abs=1600 Este)
+    // triángulo 3-4-5: tx=400, ty=-300 → distancia=500, rumbo ≈ 2254 mils (SE, en [2000,2400])
+    const result = triangulateObserver({ d_mo: 300, rumbo_mo: 3200, d_oo: 400, rumbo_relativo_oo: 4800 });
+    expect(result.distancia).toBeCloseTo(500, 0);
+    expect(result.rumbo).toBeGreaterThanOrEqual(2000);
+    expect(result.rumbo).toBeLessThanOrEqual(2400);
+  });
+
+  test('should return distancia near 0 when observer and target are at same position', () => {
+    // Obs al Norte 100m, objetivo opuesto (Sur) 100m desde obs → mismo punto que mortero
+    const result = triangulateObserver({ d_mo: 100, rumbo_mo: 0, d_oo: 100, rumbo_relativo_oo: 3200 });
+    expect(result.distancia).toBe(0);
+  });
+
+  test('should wrap rumbo_absoluto modulo 6400', () => {
+    // rumbo_mo:4000 + rumbo_relativo_oo:3200 = 7200 → 7200%6400 = 800, no debe lanzar error
+    expect(() => {
+      triangulateObserver({ d_mo: 200, rumbo_mo: 4000, d_oo: 200, rumbo_relativo_oo: 3200 });
+    }).not.toThrow();
+  });
+
+  test('should return rumbo 0 when target is due North', () => {
+    // Obs en mortero (d_mo=0), objetivo 300m al Norte
+    const result = triangulateObserver({ d_mo: 0, d_oo: 300, rumbo_mo: 0, rumbo_relativo_oo: 0 });
+    expect(result.distancia).toBe(300);
+    expect(result.rumbo).toBe(0);
+  });
+
+  test('should return rumbo 1600 when target is due East', () => {
+    // Obs en mortero (d_mo=0), objetivo 300m al Este (1600 mils)
+    const result = triangulateObserver({ d_mo: 0, d_oo: 300, rumbo_mo: 0, rumbo_relativo_oo: 1600 });
+    expect(result.distancia).toBe(300);
+    expect(result.rumbo).toBe(1600);
+  });
+
+  test('should handle rumbo_relativo_oo = 0 (observer and target on same bearing)', () => {
+    // Obs 200m al Norte, objetivo 200m más al Norte = 400m Norte desde mortero
+    const result = triangulateObserver({ d_mo: 200, rumbo_mo: 0, d_oo: 200, rumbo_relativo_oo: 0 });
+    expect(result.distancia).toBe(400);
+    expect(result.rumbo).toBe(0);
+  });
+});
+
+describe('mainReducer — RECALCULATE_ITEM', () => {
+  // Estado con una misión ya calculada
+  const stateWithMission = mainReducer(initialState, {
+    type: CALCULATE_ITEM,
+    payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0', tipoFuego: 'indirecto' }
+  });
+
+  test('should update existing mission in place without growing misiones array', () => {
+    const originalLength = stateWithMission.misiones.length;
+    const mision = stateWithMission.misiones[0];
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { ...mision, distancia: 400, rumbo: 0, municion: 'ch0' }
+    };
+    const result = mainReducer(stateWithMission, action);
+    expect(result.misiones).toHaveLength(originalLength);
+  });
+
+  test('should preserve tipoFuego of original mission when recalculating', () => {
+    const mision = stateWithMission.misiones[0];
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { ...mision, distancia: 400, rumbo: 0, municion: 'ch0' }
+    };
+    const result = mainReducer(stateWithMission, action);
+    expect(result.misiones[0].tipoFuego).toBe(mision.tipoFuego);
+  });
+
+  test('should not modify state when recalculate payload has invalid distance', () => {
+    const mision = stateWithMission.misiones[0];
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { ...mision, distancia: 10, rumbo: 0, municion: 'ch0' }
+    };
+    expect(mainReducer(stateWithMission, action)).toEqual(stateWithMission);
+  });
+
+  test('should not modify state when key does not exist in misiones', () => {
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { key: 9999, distancia: 300, rumbo: 0, municion: 'ch0' }
+    };
+    expect(mainReducer(stateWithMission, action)).toEqual(stateWithMission);
+  });
+
+  test('should not modify resultadosActuales when recalculating a row', () => {
+    const mision = stateWithMission.misiones[0];
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { ...mision, distancia: 400, rumbo: 0, municion: 'ch0' }
+    };
+    const result = mainReducer(stateWithMission, action);
+    expect(result.resultadosActuales).toEqual(stateWithMission.resultadosActuales);
+  });
+
+  test('should update mission at correct position when multiple missions exist', () => {
+    const state2 = mainReducer(stateWithMission, {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 400, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+    });
+    const firstMision = state2.misiones[0];
+    const action = {
+      type: RECALCULATE_ITEM,
+      payload: { ...firstMision, distancia: 350, rumbo: 0, municion: 'ch0' }
+    };
+    const result = mainReducer(state2, action);
+    expect(result.misiones).toHaveLength(2);
+    expect(result.misiones[0].distancia).toBe(350);
+    expect(result.misiones[1].distancia).toBe(400);
+  });
+});
+
+describe('mainReducer — DELETE_ITEM', () => {
+  const stateWithMission = mainReducer(initialState, {
+    type: CALCULATE_ITEM,
+    payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+  });
+
+  test('should remove mission with matching key from misiones', () => {
+    const key = stateWithMission.misiones[0].key;
+    const result = mainReducer(stateWithMission, { type: DELETE_ITEM, payload: { key } });
+    expect(result.misiones).toHaveLength(0);
+  });
+
+  test('should not modify state when key does not exist', () => {
+    const result = mainReducer(stateWithMission, { type: DELETE_ITEM, payload: { key: 9999 } });
+    expect(result.misiones).toHaveLength(stateWithMission.misiones.length);
+  });
+
+  test('should not decrement index when deleting a mission', () => {
+    const key = stateWithMission.misiones[0].key;
+    const result = mainReducer(stateWithMission, { type: DELETE_ITEM, payload: { key } });
+    expect(result.index).toBe(stateWithMission.index);
+  });
+
+  test('should remove only the targeted mission when multiple missions exist', () => {
+    const state2 = mainReducer(stateWithMission, {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 400, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+    });
+    const firstKey = state2.misiones[0].key;
+    const result = mainReducer(state2, { type: DELETE_ITEM, payload: { key: firstKey } });
+    expect(result.misiones).toHaveLength(1);
+    expect(result.misiones[0].key).not.toBe(firstKey);
+  });
+});
+
+describe('mainReducer — CLEAR_TABLE', () => {
+  const stateWithMissions = mainReducer(
+    mainReducer(initialState, {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+    }),
+    {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 400, altura: 0, alturaPropia: 0, rumbo: 0, municion: 'ch0' }
+    }
+  );
+
+  test('should reset misiones to empty array', () => {
+    const result = mainReducer(stateWithMissions, { type: CLEAR_TABLE });
+    expect(result.misiones).toEqual([]);
+  });
+
+  test('should set resultadosActuales to null', () => {
+    const result = mainReducer(stateWithMissions, { type: CLEAR_TABLE });
+    expect(result.resultadosActuales).toBeNull();
+  });
+
+  test('should not modify index when clearing table', () => {
+    const result = mainReducer(stateWithMissions, { type: CLEAR_TABLE });
+    expect(result.index).toBe(stateWithMissions.index);
+  });
+
+  test('should be idempotent when table is already empty', () => {
+    const cleared = mainReducer(stateWithMissions, { type: CLEAR_TABLE });
+    const clearedAgain = mainReducer(cleared, { type: CLEAR_TABLE });
+    expect(clearedAgain.misiones).toEqual([]);
+    expect(clearedAgain.resultadosActuales).toBeNull();
+  });
+});
+
+describe('Mision entity — tipoFuego', () => {
+  test('should have tipoFuego default value of directo', () => {
+    const mision = new Mision({});
+    expect(mision.tipoFuego).toBe('directo');
+  });
+
+  test('should preserve tipoFuego when passed in constructor data', () => {
+    const mision = new Mision({ tipoFuego: 'indirecto' });
+    expect(mision.tipoFuego).toBe('indirecto');
+  });
 });

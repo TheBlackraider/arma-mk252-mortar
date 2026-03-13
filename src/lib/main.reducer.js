@@ -1,8 +1,32 @@
-import { GET_ALL_ITEMS, CALCULATE_ITEM } from './main.actions';
+import { GET_ALL_ITEMS, CALCULATE_ITEM, RECALCULATE_ITEM, DELETE_ITEM, CLEAR_TABLE } from './main.actions';
 import { Mision } from '../data/mision.entity';
 import Charge0 from '../data/Charge0';
 import Charge1 from '../data/Charge1';
 import Charge2 from '../data/Charge2';
+
+const MILS_TO_RAD = Math.PI / 3200;
+const RAD_TO_MILS = 3200 / Math.PI;
+
+export const triangulateObserver = ({ d_mo, rumbo_mo, d_oo, rumbo_relativo_oo }) => {
+  const rumbo_mo_rad = rumbo_mo * MILS_TO_RAD;
+  const ox = d_mo * Math.sin(rumbo_mo_rad);
+  const oy = d_mo * Math.cos(rumbo_mo_rad);
+
+  const rumbo_abs = (rumbo_mo + rumbo_relativo_oo) % 6400;
+  const rumbo_abs_rad = rumbo_abs * MILS_TO_RAD;
+
+  const tx = ox + d_oo * Math.sin(rumbo_abs_rad);
+  const ty = oy + d_oo * Math.cos(rumbo_abs_rad);
+
+  const distancia = Math.round(Math.sqrt(tx * tx + ty * ty));
+
+  let rumbo_rad = Math.atan2(tx, ty);
+  if (rumbo_rad < 0) rumbo_rad += 2 * Math.PI;
+
+  const rumbo = Math.round((rumbo_rad * RAD_TO_MILS) % 6400);
+
+  return { distancia, rumbo };
+};
 
 const AZIMUTH_MULTIPLIER = 17.777778;
 
@@ -164,6 +188,36 @@ export const mainReducer = (state = initialState, action) => {
                 index: state.index + 1,
             };
         }
+
+        case RECALCULATE_ITEM: {
+            const validation = validateMissionInput(action.payload);
+            if (!validation.valid) return state;
+
+            const municionTypes = ['ch0', 'ch1', 'ch2'];
+            const chargeTables  = [Charge0, Charge1, Charge2];
+
+            const item = new Mision(action.payload);
+            item.azimuth = item.rumbo * AZIMUTH_MULTIPLIER;
+
+            const selectedChargeIndex = municionTypes.indexOf(item.municion);
+            if (selectedChargeIndex === -1) return state;
+
+            const result = calculateMission(item, selectedChargeIndex, chargeTables[selectedChargeIndex], municionTypes);
+
+            const original = state.misiones.find(m => m.key === item.key);
+            if (!original) return state;
+
+            const updatedResult = { ...result, key: item.key, tipoFuego: original.tipoFuego };
+            const newMisiones = state.misiones.map(m => m.key === item.key ? updatedResult : m);
+
+            return { ...state, misiones: newMisiones };
+        }
+
+        case DELETE_ITEM:
+            return { ...state, misiones: state.misiones.filter(m => m.key !== action.payload.key) };
+
+        case CLEAR_TABLE:
+            return { ...state, misiones: [], resultadosActuales: null };
 
         default:
             return state;
