@@ -342,3 +342,176 @@ sequenceDiagram
     Reducer->>Reducer: misiones = [], resultadosActuales = null
     Reducer-->>Table: { ...state, misiones: [], resultadosActuales: null }
 ```
+
+---
+
+## Hito 5: Formulario fuego indirecto + badge INDIRECTO
+**Fecha:** 2026-03-13  
+**Commit:** `cbf7216`
+
+### Entidades
+
+| Nombre | Tipo | Acción | Archivo | Descripción |
+|--------|------|--------|---------|-------------|
+| `IndirectFireForm` | componente | creada | `src/organisms/InputForm/IndirectFireForm.js` | Formulario con 4 campos numéricos (d_mo, rumbo_mo, d_oo, rumbo_relativo_oo); llama a `triangulateObserver` en submit y propaga resultado via prop `onCalculate` |
+| `handleIndirectCalculate` | función | creada | `src/organisms/InputForm/InputForm.js` | Handler en InputForm que recibe `{ distancia, rumbo, tipoFuego }` y despacha `calculateItem` con `tipoFuego: 'indirecto'` |
+| `InputForm` | componente | modificada | `src/organisms/InputForm/InputForm.js` | Importa `IndirectFireForm`; renderiza `<IndirectFireForm onCalculate={handleIndirectCalculate} />` junto al formulario existente |
+| `TableRow` | componente | modificada | `src/molecules/Table/TableRow.js` | Añadida columna de badge: `{item.tipoFuego === 'indirecto' && <span className="badge badge-warning">INDIRECTO</span>}` |
+| `Table` | componente | modificada | `src/molecules/Table/Table.js` | Añadida columna `<th>Tipo</th>` en `<thead>`; `colSpan` del tfoot aumentado de 10 a 11 |
+| `IndirectFireForm.test.js` | otro | creada | `src/organisms/InputForm/IndirectFireForm.test.js` | 4 tests: 4 campos spinbutton, botón submit, triangulación correcta d_mo=500/d_oo=300 → dist=800/rumbo=0, tipoFuego siempre indirecto |
+| `TableRow.test.js` | otro | modificada | `src/molecules/Table/TableRow.test.js` | Añadidos 2 tests: badge INDIRECTO con tipoFuego=indirecto, ausencia de badge con tipoFuego=directo |
+| `Table.test.js` | otro | modificada | `src/molecules/Table/Table.test.js` | Añadido 1 test: columna "Tipo" en thead |
+
+### Diagrama de Clases
+
+```mermaid
+classDiagram
+    class IndirectFireForm {
+        <<componente>>
+        +onCalculate: function
+        -d_mo: string
+        -rumbo_mo: string
+        -d_oo: string
+        -rumbo_relativo_oo: string
+        -handleSubmit(e) void
+        +render() JSX
+    }
+
+    class InputForm {
+        <<componente>>
+        -state: object
+        -dispatch: function
+        -handleIndirectCalculate(params) void
+    }
+
+    class TableRow {
+        <<componente>>
+        +item: object
+        +dispatcher: function
+        +tipoFuego badge: conditional JSX
+    }
+
+    class Table {
+        <<componente>>
+        +state: object
+        +dispatcher: function
+        +thead Tipo column: JSX
+    }
+
+    class triangulateObserver {
+        <<función pura>>
+        +call(params) Result
+    }
+
+    IndirectFireForm --> triangulateObserver : invoca en submit
+    InputForm --> IndirectFireForm : renderiza con onCalculate prop
+    InputForm --> calculateItem : dispatch con tipoFuego indirecto
+    TableRow --> Mision : lee tipoFuego para badge
+```
+
+### Diagrama de Secuencia — Flujo Fuego Indirecto completo
+
+```mermaid
+sequenceDiagram
+    participant Usuario
+    participant IndirectFireForm
+    participant tri as triangulateObserver
+    participant InputForm
+    participant Reducer as mainReducer
+    participant TableRow
+
+    Usuario->>IndirectFireForm: rellena d_mo, rumbo_mo, d_oo, rumbo_relativo_oo
+    Usuario->>IndirectFireForm: click "Calcular Indirecto"
+    IndirectFireForm->>tri: triangulateObserver({ d_mo, rumbo_mo, d_oo, rumbo_relativo_oo })
+    tri-->>IndirectFireForm: { distancia, rumbo }
+    IndirectFireForm->>InputForm: onCalculate({ distancia, rumbo, tipoFuego: 'indirecto' })
+    InputForm->>Reducer: dispatch(calculateItem({ ..., distancia, rumbo, tipoFuego: 'indirecto' }))
+    Reducer->>Reducer: new Mision(payload) → mision.tipoFuego = 'indirecto'
+    Reducer-->>InputForm: state.misiones = [..., nuevaMision]
+    InputForm->>TableRow: render item con tipoFuego='indirecto'
+    TableRow-->>Usuario: <span class="badge badge-warning">INDIRECTO</span>
+```
+
+---
+
+## Resumen de la feature
+
+### Diagrama de Casos de Uso
+
+```mermaid
+graph TD
+    U([Usuario]) --> UC1[Calcular misión directa]
+    U --> UC2[Calcular misión indirecta por observador]
+    U --> UC3[Recalcular misión existente in-place]
+    U --> UC4[Borrar misión individual del historial]
+    U --> UC5[Borrar todo el historial]
+    U --> UC6[Seleccionar munición solo tras primer cálculo]
+
+    UC1 --> R1[Ver elevación / azimuth / tiempo]
+    UC1 --> R2[Ver panel de 3 cargas con RECOMENDADA]
+    UC2 --> R3[Badge INDIRECTO en fila del historial]
+    UC2 --> R1
+    UC3 --> R4[Fila actualizada sin crecer el historial]
+    UC4 --> R5[Historial sin la fila eliminada]
+    UC5 --> R6[Historial vacío]
+    UC6 --> R7[Selector deshabilitado antes del primer cálculo]
+```
+
+### Diagrama de Actividad — Flujo de cálculo con ramificación directa/indirecta
+
+```mermaid
+flowchart TD
+    Start([Usuario abre la app]) --> FormDirect[Formulario Directo]
+    FormDirect --> InputDirect[Ingresa distancia + rumbo + munición]
+    InputDirect --> ClickCalc[Click Calcular]
+    ClickCalc --> Dispatch1[dispatch calculateItem tipoFuego:directo]
+    Dispatch1 --> Reducer[mainReducer CALCULATE_ITEM]
+
+    Start --> FormIndirect[Formulario Indirecto]
+    FormIndirect --> Input4[Ingresa d_mo + rumbo_mo + d_oo + rumbo_relativo_oo]
+    Input4 --> ClickIndirect[Click Calcular Indirecto]
+    ClickIndirect --> Triangulate[triangulateObserver → distancia + rumbo]
+    Triangulate --> Dispatch2[dispatch calculateItem tipoFuego:indirecto]
+    Dispatch2 --> Reducer
+
+    Reducer --> NewMision[new Mision con tipoFuego]
+    NewMision --> Results[state.misiones + resultadosActuales]
+    Results --> Table[Table renderiza historial]
+    Table --> BadgeCheck{tipoFuego === indirecto?}
+    BadgeCheck -->|Sí| Badge[Badge INDIRECTO en columna Tipo]
+    BadgeCheck -->|No| NoBadge[Celda Tipo vacía]
+```
+
+### Tabla Resumen de Entidades
+
+| Nombre | Tipo | Acción | Hito | Archivo |
+|--------|------|--------|------|---------|
+| `RECALCULATE_ITEM` | módulo | creada | 1 | `src/lib/main.actions.js` |
+| `DELETE_ITEM` | módulo | creada | 1 | `src/lib/main.actions.js` |
+| `CLEAR_TABLE` | módulo | creada | 1 | `src/lib/main.actions.js` |
+| `recalculateItem` | función | creada | 1 | `src/lib/main.actions.js` |
+| `deleteItem` | función | creada | 1 | `src/lib/main.actions.js` |
+| `clearTable` | función | creada | 1 | `src/lib/main.actions.js` |
+| `Mision.tipoFuego` | tipo/DTO | modificada | 1 | `src/data/mision.entity.js` |
+| `triangulateObserver` | función | creada | 1 | `src/lib/main.reducer.js` |
+| `RECALCULATE_ITEM` case | módulo | creada | 1 | `src/lib/main.reducer.js` |
+| `DELETE_ITEM` case | módulo | creada | 1 | `src/lib/main.reducer.js` |
+| `CLEAR_TABLE` case | módulo | creada | 1 | `src/lib/main.reducer.js` |
+| `:root` design tokens | módulo | modificada | 2 | `src/index.css` |
+| `App` estructura semántica | componente | modificada | 2 | `src/App.js` |
+| `.app-header` / `.app-main` | módulo | creada | 2 | `src/App.css` |
+| `.badge` / `.badge-*` | módulo | creada | 2 | `src/organisms/InputForm/InputForm.css` |
+| `.mission-table` | módulo | creada | 2 | `src/molecules/Table/Table.css` |
+| `SelectBox.disabled` | componente | modificada | 3 | `src/molecules/SelectBox/SelectBox.js` |
+| `InputForm.disabled municion` | componente | modificada | 3 | `src/organisms/InputForm/InputForm.js` |
+| `TableRow.handleBorrar` | función | creada | 4 | `src/molecules/Table/TableRow.js` |
+| `Table.<tfoot>` Borrar todo | componente | modificada | 4 | `src/molecules/Table/Table.js` |
+| `IndirectFireForm` | componente | creada | 5 | `src/organisms/InputForm/IndirectFireForm.js` |
+| `handleIndirectCalculate` | función | creada | 5 | `src/organisms/InputForm/InputForm.js` |
+| `TableRow` badge INDIRECTO | componente | modificada | 5 | `src/molecules/Table/TableRow.js` |
+| `Table` columna Tipo | componente | modificada | 5 | `src/molecules/Table/Table.js` |
+
+### Estadísticas
+- Entidades creadas: 15
+- Entidades modificadas: 9
+- Tests totales: 110 (68 base + 42 nuevos en feature)

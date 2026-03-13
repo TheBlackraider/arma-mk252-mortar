@@ -415,6 +415,10 @@ const handleIndirectCalculate = ({ d_mo, rumbo_mo, d_oo, rumbo_relativo_oo }) =>
 
 **Criterio de completado:** `npm test` en verde; la app permite calcular fuego indirecto completo; el badge aparece en la tabla; la triangulación del ejemplo CA-08 produce resultados correctos
 
+**Estado:** COMPLETADO  
+**Commit:** `cbf7216` — feat: indirect fire form and INDIRECTO badge (Hito 5)  
+**Fecha:** 2026-03-13
+
 ---
 
 ## Resumen de hitos
