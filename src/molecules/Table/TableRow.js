@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import NumberBox from "../../molecules/NumberBox/NumberBox";
 import SelectBox from "../../molecules/SelectBox/SelectBox";
 
-import { calculateItem } from "../../lib/main.actions";import './Table.css'
+import { recalculateItem, deleteItem } from "../../lib/main.actions";
+import './Table.css'
 
 
   export const TableRow = ({ item, dispatcher }) => {
@@ -27,15 +28,23 @@ import { calculateItem } from "../../lib/main.actions";import './Table.css'
 
     }, [item.alturaPropia, item.denominacion, item.municion, item.distancia, item.altura, item.rumbo]);
 
-    const handleClick = (event) => {
+    const handleRecalcular = (event) => {
         event.preventDefault();
-        const itemChanged = { key: item.key, alturaPropia, denominacion, municion, distancia, altura, rumbo}
-        dispatcher(calculateItem(itemChanged));
-    }
+        const itemChanged = { key: item.key, alturaPropia, denominacion, municion, distancia, altura, rumbo };
+        dispatcher(recalculateItem(itemChanged));
+    };
+
+    const handleBorrar = (event) => {
+        event.preventDefault();
+        dispatcher(deleteItem(item.key));
+    };
    
     return (
       <tr key={item.key}>
-        <td><button onClick={(e) => handleClick(e)}>Recalcular</button></td>
+        <td>
+          <button onClick={handleRecalcular}>Recalcular</button>
+          <button onClick={handleBorrar}>Borrar</button>
+        </td>
         <td><NumberBox name="alturaPropia" label="Altura Propia" placeholder="Altura del arma" value={alturaPropia} onChange={setAlturaPropia} /></td>
         <td>{denominacion}</td>
         <td><SelectBox name="municion" label="Municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} /></td>

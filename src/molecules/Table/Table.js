@@ -1,5 +1,6 @@
 import React from "react";
 import { TableRow } from "./TableRow";
+import { clearTable } from "../../lib/main.actions";
 import './Table.css'
 
 const Table = ({ dispatcher, state }) => {
@@ -18,7 +19,6 @@ const Table = ({ dispatcher, state }) => {
           <th>Elevacion</th>
           <th>Azimuth</th>
           <th>Tiempo (s)</th>
-          
         </tr>
       </thead>
       <tbody>
@@ -26,14 +26,15 @@ const Table = ({ dispatcher, state }) => {
           <TableRow key={item.key} item={item} dispatcher={dispatcher} />
         ))}
       </tbody>
+      <tfoot>
+        <tr>
+          <td colSpan={10}>
+            <button onClick={() => dispatcher(clearTable())}>Borrar todo</button>
+          </td>
+        </tr>
+      </tfoot>
       </table>
-    )
+    );
   }
 
   export default Table;
-
-  
-            
-            
-            
-            

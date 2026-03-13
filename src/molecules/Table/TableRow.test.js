@@ -1,7 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { TableRow } from './TableRow';
+import { recalculateItem, deleteItem } from '../../lib/main.actions';
 
 // Mock de sub-componentes para aislar TableRow
 jest.mock('../../molecules/NumberBox/NumberBox', () =>
@@ -38,5 +39,21 @@ describe('TableRow', () => {
     const item = buildItem({ tiempo: 0.7 });
     render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
     expect(screen.getByText('0.70s')).toBeInTheDocument();
+  });
+
+  it('dispatches recalculateItem on Recalcular click', () => {
+    const dispatcher = jest.fn();
+    const item = buildItem();
+    render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
+    fireEvent.click(screen.getByText(/recalcular/i));
+    expect(dispatcher).toHaveBeenCalledWith(recalculateItem(expect.objectContaining({ key: item.key })));
+  });
+
+  it('dispatches deleteItem on Borrar click', () => {
+    const dispatcher = jest.fn();
+    const item = buildItem();
+    render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
+    fireEvent.click(screen.getByText(/borrar/i));
+    expect(dispatcher).toHaveBeenCalledWith(deleteItem(item.key));
   });
 });
