@@ -8,6 +8,7 @@ export const TableRow = ({ item, dispatcher }) => {
     const [altura, setAltura] = useState(item.altura);
     const [rumbo, setRumbo] = useState(item.rumbo);
     const [denominacion, setDenominacion] = useState(item.denominacion || '');
+    const [municion, setMunicion] = useState(item.municion || 'ch0');
 
     useEffect(() => {
         setDistancia(item.distancia);
@@ -19,9 +20,13 @@ export const TableRow = ({ item, dispatcher }) => {
         setDenominacion(item.denominacion || '');
     }, [item.denominacion]);
 
+    useEffect(() => {
+        setMunicion(item.municion || 'ch0');
+    }, [item.municion]);
+
     const handleRecalcular = (e) => {
         e.preventDefault();
-        dispatcher(recalculateItem({ ...item, distancia, altura, rumbo, denominacion }));
+        dispatcher(recalculateItem({ ...item, distancia, altura, rumbo, denominacion, municion }));
     };
 
     const handleBorrar = (e) => {
@@ -37,7 +42,18 @@ export const TableRow = ({ item, dispatcher }) => {
         </td>
         <td>{item.alturaPropia}</td>
         <td className="td-denominacion">{denominacion || '—'}</td>
-        <td>{item.municion?.toUpperCase()}</td>
+        <td>
+          <select
+            className="td-input"
+            value={municion}
+            onChange={e => setMunicion(e.target.value)}
+            data-testid="municion-select"
+          >
+            <option value="ch0">Ch0</option>
+            <option value="ch1">Ch1</option>
+            <option value="ch2">Ch2</option>
+          </select>
+        </td>
         <td>
           <input
             className="td-input"

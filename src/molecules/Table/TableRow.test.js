@@ -78,14 +78,40 @@ describe('TableRow', () => {
     expect(screen.getByText('OBJ-ALPHA')).toBeInTheDocument();
   });
 
-  // BUG 3: denominacion se mantiene tras recalcular (estado local sincronizado)
-  it('includes denominacion in recalculateItem dispatch', () => {
+  // Hito 2: selector de munición editable
+  it('renders municion select with correct value from item prop', () => {
+    const item = buildItem({ municion: 'ch1' });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    const municionSelect = screen.getByTestId('municion-select');
+    expect(municionSelect.value).toBe('ch1');
+  });
+
+  it('renders municion select defaulting to ch0 when item.municion is falsy', () => {
+    const item = buildItem({ municion: null });
+    render(<table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>);
+    const municionSelect = screen.getByTestId('municion-select');
+    expect(municionSelect.value).toBe('ch0');
+  });
+
+  it('dispatches recalculateItem with updated municion when select changes and recalcular is clicked', () => {
     const dispatcher = jest.fn();
-    const item = buildItem({ denominacion: 'OBJ-BRAVO' });
+    const item = buildItem({ municion: 'ch0' });
     render(<table><tbody><TableRow item={item} dispatcher={dispatcher} /></tbody></table>);
+    fireEvent.change(screen.getByTestId('municion-select'), { target: { value: 'ch2' } });
     fireEvent.click(document.querySelector('.btn-action--recalc'));
     expect(dispatcher).toHaveBeenCalledWith(
-      recalculateItem(expect.objectContaining({ denominacion: 'OBJ-BRAVO' }))
+      recalculateItem(expect.objectContaining({ municion: 'ch2' }))
     );
+  });
+
+  it('syncs municion select when item.municion changes externally', () => {
+    const item = buildItem({ municion: 'ch0' });
+    const { rerender } = render(
+      <table><tbody><TableRow item={item} dispatcher={noop} /></tbody></table>
+    );
+    expect(screen.getByTestId('municion-select').value).toBe('ch0');
+    const updatedItem = buildItem({ municion: 'ch2' });
+    rerender(<table><tbody><TableRow item={updatedItem} dispatcher={noop} /></tbody></table>);
+    expect(screen.getByTestId('municion-select').value).toBe('ch2');
   });
 });
