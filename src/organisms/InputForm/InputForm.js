@@ -101,7 +101,7 @@ const InputForm = () => {
 
         <form className="input-form">
           <TextBox name="denominacion" label="Denominacion" placeholder="Denominacion del objetivo" value={denominacion} onChange={setDenominacion} />
-          <SelectBox name="municion" label="Municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} />
+          <SelectBox name="municion" label="Municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} disabled={!state.resultadosActuales} />
           <NumberBox name="distancia" label="Distancia" placeholder="Distancia al objetivo" value={distancia} onChange={setDistancia} />
           <NumberBox name="altura" label="Altura" placeholder="Altura del objetivo" value={altura} onChange={setAltura} />
           <NumberBox name="rumbo" label="Rumbo" placeholder="Rumbo al objetivo" value={rumbo} onChange={setRumbo} />

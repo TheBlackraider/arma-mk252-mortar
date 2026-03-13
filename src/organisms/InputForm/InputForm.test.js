@@ -115,3 +115,29 @@ describe('InputForm — pre-selection of recommended charge', () => {
     expect(municionSelect.value.toLowerCase()).toBe('ch2');
   });
 });
+
+describe('InputForm — municion selector disabled state', () => {
+  test('municion selector is disabled when resultadosActuales is null', () => {
+    renderWithState({
+      ...stateWithResultados,
+      resultadosActuales: null,
+    });
+    const selects = screen.getAllByRole('combobox');
+    expect(selects[0]).toBeDisabled();
+  });
+
+  test('municion selector is enabled when resultadosActuales is not null', () => {
+    renderWithState({ ...stateWithResultados });
+    const selects = screen.getAllByRole('combobox');
+    expect(selects[0]).not.toBeDisabled();
+  });
+
+  test('municion selector shows ch0 as default before any calculation', () => {
+    renderWithState({
+      ...stateWithResultados,
+      resultadosActuales: null,
+    });
+    const selects = screen.getAllByRole('combobox');
+    expect(selects[0].value.toLowerCase()).toBe('ch0');
+  });
+});
