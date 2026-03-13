@@ -1,12 +1,42 @@
 .selectbox {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
 }
 
-.selectbox p {
-    margin: 0;
-  }
+.selectbox label {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-size: 0; /* ocultar texto del label interno, el padre usa .form-label */
+}
+
+.selectbox select {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.selectbox select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79,172,254,0.15);
+}
+
+.selectbox select:disabled {
+  background-color: var(--color-background);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}

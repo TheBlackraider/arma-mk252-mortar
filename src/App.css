@@ -1,3 +1,32 @@
 .App {
-  text-align: center;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.app-header {
+  background: var(--color-header-gradient);
+  padding: 24px 32px;
+  color: #ffffff;
+}
+
+.app-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.app-header p {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }

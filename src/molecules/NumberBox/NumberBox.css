@@ -1,14 +1,34 @@
 
 .numberbox {
   display: flex;
-    flex-direction: column;
+  flex-direction: column;
   width: 100%;
-  align-items: flex-start;
-
-  padding: 0.5rem;
-  font-size: 1rem;
 }
 
 .numberbox p {
+  display: none; /* label viene del padre vía .form-label */
+}
+
+.numberbox input[type="number"] {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-btn);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  -moz-appearance: textfield;
+}
+
+.numberbox input[type="number"]::-webkit-outer-spin-button,
+.numberbox input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
   margin: 0;
+}
+
+.numberbox input[type="number"]:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79,172,254,0.15);
 }

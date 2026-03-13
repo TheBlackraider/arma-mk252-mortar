@@ -10,7 +10,8 @@ export class Mision {
     altura: 0,
     resultado: 0,
     rumbo: 0,
-    tiempo: 0
+    tiempo: 0,
+    tipoFuego: 'directo',
   };
 
   constructor(data = {}) {
@@ -26,6 +27,7 @@ export class Mision {
     this.resultado = this.parseNumericValue(config.resultado);
     this.rumbo = this.parseNumericValue(config.rumbo);
     this.tiempo = this.parseNumericValue(config.tiempo, false); // false to keep decimals
+    this.tipoFuego = config.tipoFuego || 'directo';
   }
 
   parseNumericValue(value, floor = true) {

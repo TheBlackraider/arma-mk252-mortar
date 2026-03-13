@@ -1,50 +1,100 @@
 import React, { useEffect, useState } from "react";
-
-import NumberBox from "../../molecules/NumberBox/NumberBox";
-import SelectBox from "../../molecules/SelectBox/SelectBox";
-
-import { calculateItem } from "../../lib/main.actions";import './Table.css'
+import { recalculateItem, deleteItem } from "../../lib/main.actions";
+import './Table.css'
 
 
-  export const TableRow = ({ item, dispatcher }) => {
-    const optionsMunicion = ["Ch0", "Ch1", "Ch2"];
-
-    const [denominacion, setDenominacion] = useState('');
-    const [municion, setMunicion] = useState('');
-    const [distancia, setDistancia] = useState(0);
-    const [altura, setAltura] = useState(0);
-    const [rumbo, setRumbo] = useState(0);
-    const [alturaPropia, setAlturaPropia] = useState(0);
-
+export const TableRow = ({ item, dispatcher }) => {
+    const [distancia, setDistancia] = useState(item.distancia);
+    const [altura, setAltura] = useState(item.altura);
+    const [rumbo, setRumbo] = useState(item.rumbo);
+    const [denominacion, setDenominacion] = useState(item.denominacion || '');
+    const [municion, setMunicion] = useState(item.municion || 'ch0');
 
     useEffect(() => {
-        setAlturaPropia(item.alturaPropia);
-        setDenominacion(item.denominacion);
-        setMunicion(item.municion);
         setDistancia(item.distancia);
         setAltura(item.altura);
         setRumbo(item.rumbo);
+    }, [item.distancia, item.altura, item.rumbo]);
 
-    }, [item.alturaPropia, item.denominacion, item.municion, item.distancia, item.altura, item.rumbo]);
+    useEffect(() => {
+        setDenominacion(item.denominacion || '');
+    }, [item.denominacion]);
 
-    const handleClick = (event) => {
-        event.preventDefault();
-        const itemChanged = { key: item.key, alturaPropia, denominacion, municion, distancia, altura, rumbo}
-        dispatcher(calculateItem(itemChanged));
-    }
-   
+    useEffect(() => {
+        setMunicion(item.municion || 'ch0');
+    }, [item.municion]);
+
+    const handleRecalcular = (e) => {
+        e.preventDefault();
+        dispatcher(recalculateItem({ ...item, distancia, altura, rumbo, denominacion, municion }));
+    };
+
+    const handleBorrar = (e) => {
+        e.preventDefault();
+        dispatcher(deleteItem(item.key));
+    };
+
     return (
-      <tr key={item.key}>
-        <td><button onClick={(e) => handleClick(e)}>Recalcular</button></td>
-        <td><NumberBox name="alturaPropia" label="Altura Propia" placeholder="Altura del arma" value={alturaPropia} onChange={setAlturaPropia} /></td>
-        <td>{denominacion}</td>
-        <td><SelectBox name="municion" label="Municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} /></td>
-        <td><NumberBox name="distancia" label="Distancia" placeholder="Distancia al objetivo" value={item.distancia} onChange={setDistancia} /></td>
-        <td><NumberBox name="altura" label="Altura" placeholder="Altura del objetivo" value={item.altura} onChange={setAltura} /></td>
-        <td><NumberBox name="rumbo" label="Rumbo" placeholder="Rumbo al objetivo" value={item.rumbo} onChange={setRumbo} /></td>
-        <td>{item.resultado.toFixed(2)}</td>
-        <td>{item.azimuth.toFixed(2)}</td>
-      </tr>   
+      <tr>
+        <td className="td-actions">
+          <button className="btn-action btn-action--recalc" onClick={handleRecalcular}>↺</button>
+          <button className="btn-action btn-action--delete" onClick={handleBorrar}>✕</button>
+        </td>
+        <td>{item.alturaPropia}</td>
+        <td>
+          <input
+            className="td-input"
+            type="text"
+            value={denominacion}
+            onChange={e => setDenominacion(e.target.value)}
+            placeholder="—"
+            data-testid="denominacion-input"
+          />
+        </td>
+        <td>
+          <select
+            className="td-input"
+            value={municion}
+            onChange={e => setMunicion(e.target.value)}
+            data-testid="municion-select"
+          >
+            <option value="ch0">Ch0</option>
+            <option value="ch1">Ch1</option>
+            <option value="ch2">Ch2</option>
+          </select>
+        </td>
+        <td>
+          <input
+            className="td-input"
+            type="number"
+            value={distancia}
+            onChange={e => setDistancia(Number(e.target.value))}
+          />
+        </td>
+        <td>
+          <input
+            className="td-input"
+            type="number"
+            value={altura}
+            onChange={e => setAltura(Number(e.target.value))}
+          />
+        </td>
+        <td>
+          <input
+            className="td-input"
+            type="number"
+            value={rumbo}
+            onChange={e => setRumbo(Number(e.target.value))}
+          />
+        </td>
+        <td className="td-number">{item.resultado.toFixed(2)}</td>
+        <td className="td-number">{item.azimuth.toFixed(2)}</td>
+        <td className="td-number">{item.tiempo.toFixed(2)}s</td>
+        <td>
+          {item.tipoFuego === 'indirecto' && (
+            <span className="badge badge-warning">INDIRECTO</span>
+          )}
+        </td>
+      </tr>
     );
 }
-
