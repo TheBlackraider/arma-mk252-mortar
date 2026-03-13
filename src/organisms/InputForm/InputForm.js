@@ -1,8 +1,7 @@
-import React, { useReducer, useState, useEffect, useRef } from "react";
+import React, { useReducer, useState, useEffect } from "react";
 
 import NumberBox from "../../molecules/NumberBox/NumberBox";
 import TextBox from "../../molecules/TextBox/TextBox";
-import SelectBox from "../../molecules/SelectBox/SelectBox";
 import { initialState, mainReducer } from "../../lib/main.reducer";
 import IndirectFireForm from "./IndirectFireForm";
 
@@ -83,7 +82,6 @@ const InputForm = () => {
   const [state, dispatch] = useReducer(mainReducer, initialState);
 
   const [denominacion, setDenominacion] = useState('');
-  const [municion, setMunicion] = useState('ch0');
   const [distancia, setDistancia] = useState(0);
   const [altura, setAltura] = useState(0);
   const [rumbo, setRumbo] = useState(0);
@@ -93,19 +91,15 @@ const InputForm = () => {
   const [azimuth, setAzimuth] = useState(0);
   const [tiempo, setTiempo] = useState(0);
 
-  const hasPreselected = useRef(false);
-
-  const optionsMunicion = ["Ch0", "Ch1", "Ch2"];
-
   const handleClick = (event) => {
     event.preventDefault();
-    const item = { alturaPropia, denominacion, municion, distancia, altura, rumbo };
+    const item = { alturaPropia, denominacion, distancia, altura, rumbo };
     dispatch(calculateItem(item));
   };
 
   const handleIndirectCalculate = ({ distancia: dist, rumbo: rumMils, tipoFuego }) => {
-    const rumbo = Math.round(rumMils * MILS_TO_DEGREES);
-    dispatch(calculateItem({ alturaPropia, denominacion, municion, distancia: dist, altura, rumbo, tipoFuego }));
+    const rumboGrados = Math.round(rumMils * MILS_TO_DEGREES);
+    dispatch(calculateItem({ alturaPropia, denominacion, distancia: dist, altura, rumbo: rumboGrados, tipoFuego }));
   };
 
   useEffect(() => {
@@ -113,20 +107,6 @@ const InputForm = () => {
     setAzimuth(state.azimuthActual);
     setTiempo(state.tiempoActual);
   }, [state.resultadoActual, state.azimuthActual, state.tiempoActual]);
-
-  useEffect(() => {
-    if (!state.resultadosActuales) {
-      hasPreselected.current = false; // reset cuando se borra todo
-      return;
-    }
-    if (hasPreselected.current) return; // ya se pre-seleccionó, no sobreescribir
-    const recomendada = Object.keys(state.resultadosActuales)
-      .find(charge => state.resultadosActuales[charge].recomendada);
-    if (recomendada) {
-      setMunicion(recomendada);
-      hasPreselected.current = true;
-    }
-  }, [state.resultadosActuales]);
 
   return (
     <div className="form-layout">
@@ -144,10 +124,6 @@ const InputForm = () => {
           <div className="form-field">
             <label className="form-label">Denominación</label>
             <TextBox name="denominacion" placeholder="Denominacion del objetivo" value={denominacion} onChange={setDenominacion} />
-          </div>
-          <div className="form-field">
-            <label className="form-label">Munición</label>
-            <SelectBox name="municion" placeholder="Tipo de municion" options={optionsMunicion} value={municion} onChange={setMunicion} disabled={!state.resultadosActuales} />
           </div>
           <div className="form-row">
             <div className="form-field">

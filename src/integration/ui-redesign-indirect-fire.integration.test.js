@@ -47,32 +47,29 @@ describe('Integration: UI Redesign and Indirect Fire Feature', () => {
     });
   });
 
-  describe('UC-3: Ammunition Selector Disabled Logic', () => {
-    test('[Happy] Ammo selector is disabled on initial load', () => {
+  describe('UC-3: Automatic Charge Selection Logic', () => {
+    test('[Happy] No ammo selector in main form — charge is selected automatically', () => {
       renderApp();
       const mainForm = screen.getByTestId('input-form');
-      const selects = within(mainForm).getAllByRole('combobox');
-      expect(selects[0]).toBeDisabled();
+      const selects = mainForm.querySelectorAll('select');
+      expect(selects.length).toBe(0);
     });
 
-    test('[Happy] Ammo selector is enabled after a valid first calculation', async () => {
+    test('[Happy] After a valid calculation, the recommended charge card is shown', async () => {
       renderApp();
       await act(async () => {
-        await performDirectFireCalculation();
+        await performDirectFireCalculation('1000');
       });
-      const mainForm = screen.getByTestId('input-form');
-      const selects = within(mainForm).getAllByRole('combobox');
-      expect(selects[0]).toBeEnabled();
+      expect(document.querySelector('.charge-card--recommended')).toBeInTheDocument();
     });
 
-    test('[Edge] Ammo selector remains disabled if the calculation is invalid', async () => {
+    test('[Edge] Invalid calculation does not add a mission row', async () => {
       renderApp();
       await act(async () => {
         await performDirectFireCalculation('20'); // Invalid distance
       });
-      const mainForm = screen.getByTestId('input-form');
-      const selects = within(mainForm).getAllByRole('combobox');
-      expect(selects[0]).toBeDisabled();
+      const historyRows = screen.getAllByRole('row');
+      expect(historyRows).toHaveLength(1); // only header row
     });
   });
 

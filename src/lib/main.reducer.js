@@ -172,7 +172,9 @@ export const mainReducer = (state = initialState, action) => {
             item.key = state.index;
             item.azimuth = item.rumbo * AZIMUTH_MULTIPLIER;
 
-            const selectedChargeIndex = municionTypes.indexOf(item.municion);
+            const selectedChargeIndex = municionTypes.indexOf(
+              getRecommendedCharge(item.distancia, chargeTables)
+            );
             if (selectedChargeIndex === -1) return state;
 
             const result = calculateMission(item, selectedChargeIndex, chargeTables[selectedChargeIndex], municionTypes);

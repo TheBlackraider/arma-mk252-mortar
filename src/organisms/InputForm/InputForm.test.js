@@ -101,47 +101,23 @@ describe('InputForm — resultados-cargas panel', () => {
   });
 });
 
-describe('InputForm — pre-selection of recommended charge', () => {
-  test('pre-selects municion selector with the recommended charge after calculation', () => {
-    const stateWithCh2Rec = {
-      ...stateWithResultados,
-      resultadosActuales: {
-        ch0: { elevacion: 720.0, azimuth: 0, tiempo: 40.7, recomendada: false, fuera_de_rango: true  },
-        ch1: { elevacion: 750.0, azimuth: 0, tiempo: 28.4, recomendada: false, fuera_de_rango: true  },
-        ch2: { elevacion: 800.5, azimuth: 0, tiempo: 13.5, recomendada: true,  fuera_de_rango: false },
-      },
-    };
-    renderWithState(stateWithCh2Rec);
-    // The select is the only combobox in the municion section of the form
-    const selects = screen.getAllByRole('combobox');
-    const municionSelect = selects[0];
-    expect(municionSelect.value.toLowerCase()).toBe('ch2');
-  });
-});
-
-describe('InputForm — municion selector disabled state', () => {
-  test('municion selector is disabled when resultadosActuales is null', () => {
-    renderWithState({
-      ...stateWithResultados,
-      resultadosActuales: null,
-    });
-    const selects = screen.getAllByRole('combobox');
-    expect(selects[0]).toBeDisabled();
+describe('InputForm — no ammo selector in main form', () => {
+  test('does not render any combobox/select in the main form section', () => {
+    renderWithState({ ...stateWithResultados, resultadosActuales: null });
+    // After removing the ammo SelectBox, there should be no combobox in the main form
+    const form = screen.getByTestId('input-form');
+    const selects = form.querySelectorAll('select');
+    expect(selects.length).toBe(0);
   });
 
-  test('municion selector is enabled when resultadosActuales is not null', () => {
+  test('Calcular button dispatches calculateItem without municion field', () => {
     renderWithState({ ...stateWithResultados });
-    const selects = screen.getAllByRole('combobox');
-    expect(selects[0]).not.toBeDisabled();
-  });
-
-  test('municion selector shows ch0 as default before any calculation', () => {
-    renderWithState({
-      ...stateWithResultados,
-      resultadosActuales: null,
-    });
-    const selects = screen.getAllByRole('combobox');
-    expect(selects[0].value.toLowerCase()).toBe('ch0');
+    fireEvent.click(screen.getByText('Calcular'));
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: expect.not.objectContaining({ municion: expect.anything() })
+      })
+    );
   });
 });
 
@@ -157,30 +133,16 @@ describe('InputForm — Rumbo label in degrees', () => {
   });
 });
 
-describe('InputForm — municion selector keeps selection after recalculation (BUG 1)', () => {
-  test('municion selector keeps user selection after recalculation', () => {
-    // Primer render: ch0 es recomendada → el selector debe pre-seleccionar ch0
-    const { rerender } = renderWithState({ ...stateWithResultados });
-    const selects = screen.getAllByRole('combobox');
-    const municionSelect = selects[0];
-    // Verificar que ch0 fue pre-seleccionada
-    expect(municionSelect.value.toLowerCase()).toBe('ch0');
-
-    // Usuario cambia a ch1 manualmente
-    fireEvent.change(municionSelect, { target: { value: 'ch1' } });
-    expect(municionSelect.value.toLowerCase()).toBe('ch1');
-
-    // Nuevo cálculo: resultadosActuales cambia pero ch0 sigue siendo recomendada
-    const newResultados = {
-      ch0: { elevacion: 810.0, azimuth: 1100.0, tiempo: 13.0, recomendada: true,  fuera_de_rango: false },
-      ch1: { elevacion: 760.0, azimuth: 1100.0, tiempo: 28.0, recomendada: false, fuera_de_rango: false },
-      ch2: { elevacion: 730.0, azimuth: 1100.0, tiempo: 40.0, recomendada: false, fuera_de_rango: true  },
-    };
-    mockState = { ...stateWithResultados, resultadosActuales: newResultados, index: 3 };
-    rerender(<InputForm />);
-
-    // El selector debe mantener la selección manual del usuario (ch1), no volver a ch0
-    const selectsAfter = screen.getAllByRole('combobox');
-    expect(selectsAfter[0].value.toLowerCase()).toBe('ch1');
+describe('InputForm — recommended charge used automatically (no manual selector)', () => {
+  test('reducer CALCULATE_ITEM uses recommended charge for distance 300 (ch0)', () => {
+    // This test verifies via the reducer directly that recommended charge is used
+    // The form no longer has a municion selector — the reducer decides
+    const { mainReducer: reducer, initialState: initState } = require('../../lib/main.reducer');
+    const { CALCULATE_ITEM } = require('../../lib/main.actions');
+    const result = reducer(initState, {
+      type: CALCULATE_ITEM,
+      payload: { distancia: 300, altura: 0, alturaPropia: 0, rumbo: 0 }
+    });
+    expect(result.misiones[0].municion).toBe('ch0');
   });
 });
